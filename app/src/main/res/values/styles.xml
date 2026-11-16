@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Màu xanh ngọc đậm -->
+    <style name="AppTheme" parent="android:Theme.Material.Light.NoActionBar">
+        <item name="android:colorPrimary">#00695C</item>
+        <item name="android:colorPrimaryDark">#004D40</item>
+        <item name="android:colorAccent">#00897B</item>
+        <item name="android:statusBarColor">#004D40</item>
+        <item name="android:navigationBarColor">#004D40</item>
+        <item name="android:windowBackground">@android:color/white</item>
+    </style>
+</resources>

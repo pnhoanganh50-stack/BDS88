@@ -1,0 +1,51 @@
+name: Build APK
+
+on:
+  push:
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Lay source code
+        uses: actions/checkout@v4
+
+      - name: Kiem tra du file
+        run: |
+          missing=0
+          for f in settings.gradle build.gradle gradle.properties app/build.gradle \
+                   app/src/main/AndroidManifest.xml app/src/main/assets/index.html \
+                   app/src/main/java/vn/khachbds/app/MainActivity.java \
+                   app/src/main/java/vn/khachbds/app/Bridge.java \
+                   app/src/main/java/vn/khachbds/app/Reminders.java \
+                   app/src/main/java/vn/khachbds/app/ReminderReceiver.java \
+                   app/src/main/res/values/styles.xml \
+                   app/src/main/res/mipmap-xxxhdpi/ic_launcher.png \
+                   keystore/app.keystore; do
+            if [ ! -f "$f" ]; then echo "::error::THIEU FILE: $f"; missing=1; fi
+          done
+          exit $missing
+
+      - name: Cai Java 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+
+      - name: Cai Gradle 8.7
+        uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: '8.7'
+
+      - name: Build APK
+        run: gradle :app:assembleRelease --no-daemon --stacktrace
+
+      - name: Doi ten file APK
+        run: cp app/build/outputs/apk/release/app-release.apk KhachBDS.apk
+
+      - name: Tai len ket qua
+        uses: actions/upload-artifact@v4
+        with:
+          name: KhachBDS-APK
+          path: KhachBDS.apk

@@ -1,0 +1,53 @@
+KHACH BDS - APP QUAN LY KHACH HANG BAT DONG SAN (Android)
+=========================================================
+
+App chay OFFLINE, du lieu luu trong dien thoai. Mo lan dau co san du lieu mau
+de thu; vao tab Thong ke > "Xoa du lieu mau" khi muon nhap khach that.
+
+---------------------------------------------------------
+CACH 1 - BUILD APK TREN GITHUB (khong can cai gi, ~5 phut)
+---------------------------------------------------------
+1. Vao github.com, dang nhap. Bam "+" > New repository > dat ten (vd khach-bds)
+   > chon Private > Create repository.
+2. Bam "uploading an existing file". Mo thu muc khach_bds_chat, chon TAT CA
+   ben trong (app, gradle, keystore, settings.gradle, build.gradle,
+   gradle.properties, ...) keo tha vao trang > Commit changes.
+3. Bam Add file > Create new file. O ten file go dung:
+       .github/workflows/build-apk.yml
+   Mo file github-build-apk.yml (co san trong thu muc), copy toan bo noi dung
+   dan vao > Commit changes.
+4. Bam tab Actions > doi dau tick xanh > bam vao lan chay > muc Artifacts
+   > tai "KhachBDS-APK" > giai nen ra file KhachBDS.apk
+
+---------------------------------------------------------
+CACH 2 - ANDROID STUDIO
+---------------------------------------------------------
+1. Cai Android Studio (developer.android.com/studio).
+2. File > Open > chon thu muc khach_bds_chat. Doi "Gradle sync" xong.
+3. Build > Build App Bundle(s) / APK(s) > Build APK(s).
+4. File APK: app/build/outputs/apk/debug/app-debug.apk
+
+---------------------------------------------------------
+CAI LEN DIEN THOAI
+---------------------------------------------------------
+- Gui file APK sang dien thoai (Zalo, Google Drive, cap USB) > bam mo file.
+- May hoi "cai ung dung khong ro nguon goc" > bat "Cho phep tu nguon nay".
+- Play Protect canh bao > bam "Van cai dat".
+- Mo app > bam "Cho phep" thong bao (de nhan nhac lich hen).
+- May Xiaomi/Oppo/Vivo/Samsung: Cai dat > Ung dung > Khach BDS > Pin
+  > chon "Khong han che" de nhac hen chay dung gio.
+
+---------------------------------------------------------
+LUU Y DU LIEU
+---------------------------------------------------------
+- Cai ban moi de len ban cu: du lieu GIU NGUYEN (nho giu thu muc keystore).
+- Go app = mat du lieu. Hay vao Thong ke > "Sao luu du lieu" thuong xuyen,
+  gui ban sao luu vao Zalo "Cloud cua toi". Khi can: Thong ke > "Khoi phuc".
+
+---------------------------------------------------------
+SUA GIAO DIEN / NOI DUNG
+---------------------------------------------------------
+Toan bo giao dien nam trong 1 file: app/src/main/assets/index.html
+ - Doi mau: dong --p:#00695C (xanh ngoc dam) o dau file.
+ - Doi danh sach trang thai, nhu cau, nguon khach: phan "CAU HINH".
+Mo file index.html bang Chrome tren may tinh de xem thu truoc khi build.

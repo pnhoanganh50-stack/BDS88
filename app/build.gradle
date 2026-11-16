@@ -1,0 +1,46 @@
+plugins {
+    id 'com.android.application'
+}
+
+android {
+    namespace 'vn.khachbds.app'
+    compileSdk 34
+
+    defaultConfig {
+        applicationId 'vn.khachbds.app'
+        minSdk 24          // Android 7.0 tro len
+        targetSdk 34
+        versionCode 1
+        versionName '1.0'
+    }
+
+    // Chu ky co dinh: cai ban moi de len ban cu se GIU NGUYEN du lieu
+    signingConfigs {
+        fixed {
+            storeFile rootProject.file('keystore/app.keystore')
+            storePassword 'khachbds'
+            keyAlias 'khachbds'
+            keyPassword 'khachbds'
+        }
+    }
+
+    buildTypes {
+        debug {
+            signingConfig signingConfigs.fixed
+        }
+        release {
+            minifyEnabled false
+            signingConfig signingConfigs.fixed
+        }
+    }
+
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_17
+        targetCompatibility JavaVersion.VERSION_17
+    }
+
+    lint {
+        checkReleaseBuilds false
+        abortOnError false
+    }
+}

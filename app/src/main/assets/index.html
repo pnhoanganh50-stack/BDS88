@@ -1,0 +1,1256 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
+<title>Khách BĐS</title>
+<style>
+:root{
+  --p:#00695C; --pd:#004D40; --pl:#E0F2F1; --acc:#26A69A;
+  --bg:#F2F6F5; --card:#fff; --tx:#1B2B28; --mut:#6B7C79; --line:#E3ECEA;
+  --red:#E53935; --org:#FB8C00;
+}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;height:100%;background:var(--bg);color:var(--tx);
+  font-family:-apple-system,Roboto,"Segoe UI","Noto Sans",sans-serif;font-size:16px;overscroll-behavior:none}
+button{font-family:inherit;font-size:inherit;border:0;background:none;color:inherit;cursor:pointer}
+input,select,textarea{font-family:inherit;font-size:17px;color:var(--tx)}
+.hidden{display:none!important}
+
+/* ---------- Khung chính ---------- */
+#app{position:fixed;top:0;left:0;right:0;bottom:0;display:flex;flex-direction:column}
+.topbar{background:var(--p);color:#fff;height:56px;display:flex;align-items:center;padding:0 8px 0 16px;flex-shrink:0;gap:4px}
+.topbar h1{font-size:20px;margin:0;flex:1;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.ibtn{width:44px;height:44px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:22px;color:inherit;flex-shrink:0;position:relative}
+.ibtn:active{background:rgba(255,255,255,.18)}
+.ibtn svg{width:24px;height:24px;fill:currentColor}
+.dotbadge{position:absolute;top:6px;right:6px;min-width:18px;height:18px;border-radius:9px;background:#FFC107;color:#000;font-size:11px;font-weight:700;display:flex;align-items:center;justify-content:center;padding:0 4px}
+#content{flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;padding-bottom:90px}
+.tabbar{height:62px;background:#fff;border-top:1px solid var(--line);display:flex;flex-shrink:0}
+.tabbar button{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;color:var(--mut);font-size:12.5px;font-weight:600;position:relative}
+.tabbar button svg{width:26px;height:26px;fill:currentColor}
+.tabbar button.on{color:var(--p)}
+.tabbar .tbadge{position:absolute;top:5px;left:calc(50% + 6px);background:var(--red);color:#fff;font-size:11px;font-weight:700;min-width:18px;height:18px;border-radius:9px;display:flex;align-items:center;justify-content:center;padding:0 4px}
+.fab{position:fixed;right:18px;bottom:80px;width:60px;height:60px;border-radius:50%;background:var(--p);color:#fff;font-size:34px;line-height:1;box-shadow:0 4px 14px rgba(0,77,64,.45);display:flex;align-items:center;justify-content:center;z-index:5}
+.fab:active{transform:scale(.95)}
+
+/* ---------- Thanh tìm kiếm ---------- */
+.searchbar{background:var(--p);padding:0 12px 10px;display:flex;gap:8px}
+.searchbar .sbox{flex:1;background:#fff;border-radius:22px;display:flex;align-items:center;padding:0 12px;height:42px}
+.searchbar input{border:0;outline:0;flex:1;font-size:16px;background:transparent;min-width:0}
+.searchbar .fbtn{background:rgba(255,255,255,.18);color:#fff;border-radius:22px;padding:0 14px;height:42px;font-weight:600;font-size:15px;display:flex;align-items:center;gap:6px;white-space:nowrap}
+.searchbar .fbtn.on{background:#FFC107;color:#000}
+
+/* ---------- Thẻ đếm trạng thái ---------- */
+.counts{display:flex;gap:8px;overflow-x:auto;padding:12px 12px 4px;scrollbar-width:none}
+.counts::-webkit-scrollbar{display:none}
+.cnt{flex-shrink:0;min-width:92px;background:#fff;border-radius:14px;padding:8px 12px;border:2px solid transparent;text-align:left;box-shadow:0 1px 2px rgba(0,0,0,.06)}
+.cnt b{display:block;font-size:22px;line-height:1.2}
+.cnt span{font-size:13px;color:var(--mut);white-space:nowrap}
+.cnt.on{border-color:currentColor;background:var(--pl)}
+
+/* ---------- Khối cần chăm sóc ---------- */
+.care{display:flex;gap:8px;padding:8px 12px 4px}
+.carecard{flex:1;border-radius:14px;padding:10px 12px;color:#fff;text-align:left;display:flex;align-items:center;gap:10px;box-shadow:0 2px 6px rgba(0,0,0,.12)}
+.carecard b{font-size:26px}
+.carecard div{font-size:13.5px;line-height:1.25;font-weight:600}
+.carecard.red{background:linear-gradient(135deg,#E53935,#C62828)}
+.carecard.org{background:linear-gradient(135deg,#FB8C00,#EF6C00)}
+.carecard.zero{background:#B0BEC5}
+.carecard.on{outline:3px solid #FFC107;outline-offset:2px}
+.filterinfo{margin:8px 12px 0;background:#FFF8E1;border:1px solid #FFE082;border-radius:12px;padding:8px 12px;font-size:14px;display:flex;align-items:center;gap:8px}
+.filterinfo span{flex:1}
+.filterinfo button{color:var(--p);font-weight:700}
+
+/* ---------- Danh sách kiểu tin nhắn ---------- */
+.list{background:#fff;margin-top:10px}
+.row{display:flex;gap:12px;padding:12px 14px;border-bottom:1px solid var(--line);align-items:flex-start;text-align:left;width:100%}
+.row:active{background:#F1F8F7}
+.av{width:56px;height:56px;border-radius:50%;flex-shrink:0;color:#fff;font-weight:700;font-size:20px;display:flex;align-items:center;justify-content:center;position:relative}
+.av .ht{position:absolute;right:-3px;bottom:-3px;font-size:15px;background:#fff;border-radius:50%;width:24px;height:24px;display:flex;align-items:center;justify-content:center;box-shadow:0 1px 3px rgba(0,0,0,.2)}
+.mid{flex:1;min-width:0}
+.l1{display:flex;align-items:baseline;gap:8px}
+.nm{font-weight:700;font-size:17px;flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.tm{font-size:12.5px;color:var(--mut);flex-shrink:0}
+.l2{font-size:14.5px;color:var(--p);font-weight:600;margin-top:1px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.l3{font-size:14.5px;color:var(--mut);margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.tags{display:flex;gap:6px;flex-wrap:wrap;margin-top:6px}
+.tag{font-size:12px;font-weight:700;padding:3px 8px;border-radius:10px;white-space:nowrap}
+.tag.due{background:#FFEBEE;color:var(--red)}
+.tag.today{background:#FFF3E0;color:#E65100}
+.empty{text-align:center;color:var(--mut);padding:48px 24px;font-size:16px;line-height:1.5}
+.empty .big{font-size:52px;margin-bottom:6px}
+
+/* ---------- Màn hình chồng (chi tiết / form) ---------- */
+.screen{position:fixed;top:0;left:0;right:0;bottom:0;background:var(--bg);display:flex;flex-direction:column;transform:translateX(100%);transition:transform .2s ease;z-index:20}
+.screen.show{transform:none}
+.screen .body{flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;padding-bottom:24px}
+.dhead{display:flex;align-items:center;gap:10px;flex:1;min-width:0}
+.dhead .av{width:40px;height:40px;font-size:15px}
+.dhead .av .ht{width:18px;height:18px;font-size:11px;right:-4px;bottom:-4px}
+.dhead .t{min-width:0}
+.dhead .t b{display:block;font-size:17px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.dhead .t small{font-size:12.5px;opacity:.85}
+.card{background:#fff;border-radius:16px;margin:12px;padding:14px;box-shadow:0 1px 2px rgba(0,0,0,.05)}
+.card h3{margin:0 0 10px;font-size:16px;color:var(--p);display:flex;align-items:center;gap:6px}
+.card h3 .sp{flex:1}
+.card h3 button{font-size:14px;color:var(--p);font-weight:700;padding:4px 8px}
+.statusbox{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.statusbox .tag{font-size:14px;padding:6px 12px}
+.bigbtn{display:flex;align-items:center;justify-content:center;gap:8px;width:100%;height:52px;border-radius:14px;background:var(--p);color:#fff;font-weight:700;font-size:17px;margin-top:12px}
+.bigbtn:active{opacity:.85}
+.bigbtn.ghost{background:var(--pl);color:var(--p)}
+.bigbtn.danger{background:#FFEBEE;color:var(--red)}
+.next{margin-top:10px;font-size:15px;font-weight:600}
+.actions{display:flex;gap:8px;margin:12px}
+.actions button{flex:1;background:#fff;border-radius:14px;padding:10px 4px;display:flex;flex-direction:column;align-items:center;gap:4px;font-size:13px;font-weight:600;color:var(--p);box-shadow:0 1px 2px rgba(0,0,0,.06)}
+.actions button .ic{width:40px;height:40px;border-radius:50%;background:var(--pl);display:flex;align-items:center;justify-content:center;font-size:20px}
+.actions button:disabled{opacity:.4}
+.info{display:grid;grid-template-columns:auto 1fr;gap:9px 12px;font-size:15.5px}
+.info .k{color:var(--mut)}
+.info .v{font-weight:600;word-break:break-word}
+.info a{color:var(--p);text-decoration:none}
+
+/* Timeline */
+.tl{position:relative;padding-left:26px}
+.tl:before{content:"";position:absolute;left:8px;top:6px;bottom:6px;width:2px;background:var(--line)}
+.ti{position:relative;padding-bottom:16px}
+.ti:last-child{padding-bottom:0}
+.ti .dot{position:absolute;left:-24px;top:3px;width:16px;height:16px;border-radius:50%;border:3px solid #fff;box-shadow:0 0 0 1px var(--line)}
+.ti .when{font-size:12.5px;color:var(--mut)}
+.ti .what{font-weight:700;font-size:15px;margin-top:1px}
+.ti .txt{font-size:15px;margin-top:3px;background:var(--pl);border-radius:4px 14px 14px 14px;padding:8px 12px;display:inline-block;max-width:100%;white-space:pre-wrap;word-break:break-word}
+.ti .del{float:right;color:#B0BEC5;font-size:13px;padding:0 4px}
+
+/* Thanh nhập ghi chú (như ô chat) */
+.composer{background:#fff;border-top:1px solid var(--line);padding:8px 10px;display:flex;gap:8px;align-items:flex-end;flex-shrink:0}
+.composer select{border:1px solid var(--line);border-radius:20px;height:42px;padding:0 6px;background:#fff;font-size:15px}
+.composer textarea{flex:1;border:1px solid var(--line);border-radius:20px;padding:10px 14px;resize:none;height:42px;max-height:120px;outline:0;font-size:16px;line-height:20px}
+.composer .send{width:44px;height:42px;border-radius:21px;background:var(--p);color:#fff;font-size:20px;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+
+/* Form */
+.form{padding:4px 14px 20px}
+.fl{display:block;font-size:14px;font-weight:700;color:var(--p);margin:14px 2px 6px}
+.fi{width:100%;height:50px;border:1px solid #CFDCDA;border-radius:12px;padding:0 14px;background:#fff;outline:0}
+.fi:focus{border-color:var(--p);box-shadow:0 0 0 2px var(--pl)}
+textarea.fi{height:auto;min-height:90px;padding:12px 14px;resize:vertical}
+.chips{display:flex;flex-wrap:wrap;gap:8px}
+.chip{padding:9px 14px;border-radius:20px;background:#fff;border:1.5px solid #CFDCDA;font-size:15px;font-weight:600;color:var(--tx)}
+.chip.on{background:var(--p);border-color:var(--p);color:#fff}
+.req{color:var(--red)}
+.quick{display:flex;gap:6px;flex-wrap:wrap;margin-top:8px}
+.quick button{background:var(--pl);color:var(--p);border-radius:16px;padding:6px 12px;font-size:14px;font-weight:600}
+
+/* Bottom sheet & hộp thoại */
+.mask{position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,.45);z-index:50;display:flex;align-items:flex-end;opacity:0;transition:opacity .18s}
+.mask.show{opacity:1}
+.sheet{background:#fff;width:100%;max-height:92%;border-radius:20px 20px 0 0;display:flex;flex-direction:column;transform:translateY(30px);transition:transform .2s}
+.mask.show .sheet{transform:none}
+.sheet .sh{padding:14px 16px 6px;display:flex;align-items:center;gap:8px}
+.sheet .sh b{flex:1;font-size:18px}
+.sheet .sb{overflow-y:auto;padding:0 16px 8px}
+.sheet .sf{padding:10px 16px 16px;display:flex;gap:10px;border-top:1px solid var(--line)}
+.sheet .sf button{flex:1;height:52px;border-radius:14px;font-weight:700;font-size:17px}
+.sheet .sf .ok{background:var(--p);color:#fff}
+.sheet .sf .no{background:#ECEFF1}
+.mask.center{align-items:center;justify-content:center;padding:24px}
+.dialog{background:#fff;border-radius:18px;padding:20px;width:100%;max-width:360px}
+.dialog h4{margin:0 0 8px;font-size:18px}
+.dialog p{margin:0 0 18px;color:#37474F;line-height:1.45;white-space:pre-wrap}
+.dialog .btns{display:flex;gap:10px}
+.dialog .btns button{flex:1;height:48px;border-radius:12px;font-weight:700}
+.toast{position:fixed;left:50%;bottom:96px;transform:translateX(-50%);background:#263238;color:#fff;padding:12px 18px;border-radius:24px;font-size:15px;z-index:90;max-width:88%;text-align:center;opacity:0;transition:opacity .2s;pointer-events:none}
+.toast.show{opacity:1}
+
+/* BĐS */
+.pcard{display:flex;gap:12px;background:#fff;border-radius:16px;margin:10px 12px;padding:12px;box-shadow:0 1px 2px rgba(0,0,0,.05);width:calc(100% - 24px);text-align:left}
+.pic{width:64px;height:64px;border-radius:14px;display:flex;align-items:center;justify-content:center;font-size:30px;flex-shrink:0;background:var(--pl)}
+.pcard .t{font-weight:700;font-size:16.5px}
+.pcard .loc{font-size:14px;color:var(--mut);margin-top:2px}
+.pcard .pr{display:flex;gap:12px;margin-top:6px;align-items:baseline;flex-wrap:wrap}
+.pcard .price{color:var(--p);font-weight:800;font-size:17px}
+.pcard .area{font-size:14.5px;color:var(--tx);font-weight:600}
+.typechips{display:flex;gap:8px;overflow-x:auto;padding:12px 12px 2px;scrollbar-width:none}
+.typechips::-webkit-scrollbar{display:none}
+.typechips .chip{flex-shrink:0}
+
+/* Lịch hẹn */
+.sec{font-size:14px;font-weight:800;color:var(--mut);padding:16px 16px 6px;text-transform:uppercase;letter-spacing:.3px}
+.sec.red{color:var(--red)}
+.sec.org{color:#E65100}
+.appt{display:flex;gap:12px;background:#fff;margin:0 12px 8px;border-radius:14px;padding:12px;align-items:center;box-shadow:0 1px 2px rgba(0,0,0,.05);border-left:5px solid var(--p)}
+.appt.red{border-left-color:var(--red)}
+.appt.org{border-left-color:var(--org)}
+.appt.done{opacity:.55}
+.appt .time{font-weight:800;font-size:17px;min-width:52px;text-align:center;color:var(--p)}
+.appt .time small{display:block;font-size:11.5px;font-weight:600;color:var(--mut)}
+.appt .mid b{font-size:16px}
+.appt .mid div{font-size:14px;color:var(--mut);margin-top:2px}
+.appt .ab{display:flex;gap:4px}
+.appt .ab button{width:42px;height:42px;border-radius:50%;background:var(--pl);font-size:18px}
+.toggle{display:flex;align-items:center;gap:8px;padding:12px 16px 0;font-size:15px;color:var(--mut)}
+.toggle input{width:22px;height:22px;accent-color:var(--p)}
+
+/* Thống kê */
+.kpis{display:grid;grid-template-columns:1fr 1fr;gap:10px;padding:12px}
+.kpi{background:#fff;border-radius:16px;padding:14px;box-shadow:0 1px 2px rgba(0,0,0,.05)}
+.kpi b{font-size:28px;display:block;color:var(--p)}
+.kpi span{font-size:14px;color:var(--mut)}
+.kpi.main{grid-column:1 / -1;background:linear-gradient(135deg,var(--p),var(--pd));color:#fff;display:flex;align-items:center;gap:16px}
+.kpi.main b{color:#fff;font-size:40px}
+.kpi.main span{color:#E0F2F1;font-size:15px}
+.ring{width:84px;height:84px;border-radius:50%;flex-shrink:0;display:flex;align-items:center;justify-content:center}
+.ring i{width:62px;height:62px;border-radius:50%;background:var(--pd);display:flex;align-items:center;justify-content:center;font-style:normal;font-weight:800;font-size:18px}
+.bar{margin:8px 0}
+.bar .bl{display:flex;justify-content:space-between;font-size:14.5px;margin-bottom:4px}
+.bar .bt{height:12px;background:#ECEFF1;border-radius:6px;overflow:hidden}
+.bar .bf{height:100%;border-radius:6px}
+.setbtn{display:flex;align-items:center;gap:12px;width:100%;padding:14px 4px;border-bottom:1px solid var(--line);font-size:16px;font-weight:600;text-align:left}
+.setbtn:last-child{border-bottom:0}
+.setbtn .ic{font-size:22px;width:30px;text-align:center}
+.setbtn small{display:block;font-weight:400;color:var(--mut);font-size:13px}
+</style>
+</head>
+<body>
+<div id="app">
+  <div class="topbar">
+    <h1 id="title">Khách hàng</h1>
+    <button class="ibtn" id="topAction" onclick="topAction()" aria-label="Thêm"></button>
+  </div>
+  <div id="searchWrap" class="searchbar">
+    <div class="sbox">
+      <span style="font-size:18px;color:#78909C">🔍</span>
+      <input id="q" type="search" placeholder="Tìm tên, SĐT, khu vực..." autocomplete="off" oninput="onSearch(this.value)">
+      <button id="qClear" class="hidden" onclick="clearSearch()" style="font-size:18px;color:#90A4AE;padding:4px">✕</button>
+    </div>
+    <button id="fbtn" class="fbtn" onclick="openFilterSheet()">⚙ Lọc</button>
+  </div>
+  <div id="content"></div>
+  <div class="tabbar">
+    <button data-tab="customers" onclick="switchTab('customers')"><svg viewBox="0 0 24 24"><path d="M16 11c1.66 0 2.99-1.34 2.99-3S17.66 5 16 5c-1.66 0-3 1.34-3 3s1.34 3 3 3zm-8 0c1.66 0 2.99-1.34 2.99-3S9.66 5 8 5C6.34 5 5 6.34 5 8s1.34 3 3 3zm0 2c-2.33 0-7 1.17-7 3.5V19h14v-2.5c0-2.33-4.67-3.5-7-3.5zm8 0c-.29 0-.62.02-.97.05 1.16.84 1.97 1.97 1.97 3.45V19h6v-2.5c0-2.33-4.67-3.5-7-3.5z"/></svg>Khách hàng<span id="badgeCus" class="tbadge hidden"></span></button>
+    <button data-tab="props" onclick="switchTab('props')"><svg viewBox="0 0 24 24"><path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"/></svg>Bất động sản</button>
+    <button data-tab="appts" onclick="switchTab('appts')"><svg viewBox="0 0 24 24"><path d="M19 4h-1V2h-2v2H8V2H6v2H5c-1.11 0-2 .9-2 2v14c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 16H5V9h14v11zM7 11h5v5H7z"/></svg>Lịch hẹn<span id="badgeAppt" class="tbadge hidden"></span></button>
+    <button data-tab="stats" onclick="switchTab('stats')"><svg viewBox="0 0 24 24"><path d="M5 9.2h3V19H5zM10.6 5h2.8v14h-2.8zm5.6 8H19v6h-2.8z"/></svg>Thống kê</button>
+  </div>
+  <button class="fab" id="fab" onclick="fabClick()" aria-label="Thêm">+</button>
+</div>
+<div id="toast" class="toast"></div>
+
+<script>
+'use strict';
+/* =====================================================================
+   CẤU HÌNH
+   ===================================================================== */
+const STATUSES = [
+  {k:'moi',         l:'Khách mới',         c:'#1E88E5'},
+  {k:'tuvan',       l:'Đang tư vấn',       c:'#00897B'},
+  {k:'xemnha',      l:'Đã xem nhà',        c:'#7E57C2'},
+  {k:'thuongluong', l:'Đang thương lượng', c:'#F57C00'},
+  {k:'datcoc',      l:'Đã đặt cọc',        c:'#B8860B'},
+  {k:'dachot',      l:'Đã chốt',           c:'#2E7D32'},
+  {k:'khongtn',     l:'Không tiềm năng',   c:'#757575'},
+  {k:'chamlai',     l:'Chăm sóc lại',      c:'#D81B60'}
+];
+const HEATS = [
+  {k:'nong', l:'Nóng', i:'🔴', c:'#E53935'},
+  {k:'am',   l:'Ấm',   i:'🟡', c:'#F9A825'},
+  {k:'lanh', l:'Lạnh', i:'⚪', c:'#78909C'},
+  {k:'vip',  l:'VIP',  i:'⭐', c:'#FF8F00'}
+];
+const NEEDS = ['Căn hộ','Đất nền','Nhà phố','Biệt thự','Shophouse','Khác'];
+const PTYPES = ['Căn hộ','Đất nền','Nhà phố','Biệt thự','Shophouse'];
+const PTYPE_ICON = {'Căn hộ':'🏢','Đất nền':'🌳','Nhà phố':'🏠','Biệt thự':'🏡','Shophouse':'🏬'};
+const PSTATUS = [{k:'Đang bán',c:'#2E7D32'},{k:'Đã cọc',c:'#B8860B'},{k:'Đã bán',c:'#757575'}];
+const SOURCES = ['Facebook','Zalo','Người quen giới thiệu','Website','Đi xem dự án','Quảng cáo','Khác'];
+const APPT_TYPES = ['Gọi lại','Đi xem nhà','Gặp mặt','Ký hợp đồng','Khác'];
+const APPT_ICON = {'Gọi lại':'📞','Đi xem nhà':'🏠','Gặp mặt':'🤝','Ký hợp đồng':'✍️','Khác':'📌'};
+const NOTE_KINDS = [{k:'note',l:'📝 Ghi chú'},{k:'call',l:'📞 Đã gọi'},{k:'msg',l:'💬 Đã nhắn'},{k:'meet',l:'🤝 Đã gặp'}];
+const CLOSED = ['dachot','khongtn'];   // không cần nhắc chăm sóc
+const AV_COLORS = ['#00897B','#1E88E5','#8E24AA','#F4511E','#3949AB','#00ACC1','#7CB342','#D81B60','#6D4C41','#5E35B1'];
+
+const stMap = Object.fromEntries(STATUSES.map(s=>[s.k,s]));
+const htMap = Object.fromEntries(HEATS.map(h=>[h.k,h]));
+
+/* =====================================================================
+   TIỆN ÍCH
+   ===================================================================== */
+const $ = id => document.getElementById(id);
+function esc(s){return String(s==null?'':s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));}
+function uid(){return Date.now().toString(36)+Math.random().toString(36).slice(2,7);}
+function pad(n){return String(n).padStart(2,'0');}
+function dayStr(d){return d.getFullYear()+'-'+pad(d.getMonth()+1)+'-'+pad(d.getDate());}
+function dtStr(d){return dayStr(d)+'T'+pad(d.getHours())+':'+pad(d.getMinutes());}
+function nowStr(){return dtStr(new Date());}
+/** Chuỗi ngày "YYYY-MM-DD" hoặc "YYYY-MM-DDTHH:MM" -> Date theo giờ máy */
+function toDate(s){
+  if(!s) return null;
+  const m = /^(\d{4})-(\d{2})-(\d{2})(?:T(\d{2}):(\d{2}))?/.exec(s);
+  if(!m) return null;
+  return new Date(+m[1], +m[2]-1, +m[3], m[4]?+m[4]:0, m[5]?+m[5]:0);
+}
+function startOfDay(d){return new Date(d.getFullYear(),d.getMonth(),d.getDate());}
+function addDays(d,n){const x=new Date(d);x.setDate(x.getDate()+n);return x;}
+function dayDiff(a,b){return Math.round((startOfDay(a)-startOfDay(b))/86400000);}
+const WD = ['CN','T2','T3','T4','T5','T6','T7'];
+function fmtShort(s){ // dùng ở danh sách (giống Zalo)
+  const d=toDate(s); if(!d) return '';
+  const diff=dayDiff(new Date(),d);
+  if(diff===0) return pad(d.getHours())+':'+pad(d.getMinutes());
+  if(diff===1) return 'Hôm qua';
+  if(diff>1&&diff<7) return WD[d.getDay()];
+  return pad(d.getDate())+'/'+pad(d.getMonth()+1);
+}
+function fmtFull(s){const d=toDate(s);if(!d)return '';return pad(d.getHours())+':'+pad(d.getMinutes())+' · '+pad(d.getDate())+'/'+pad(d.getMonth()+1)+'/'+d.getFullYear();}
+function fmtDay(s){
+  const d=toDate(s); if(!d) return '';
+  const diff=dayDiff(d,new Date());
+  const base=WD[d.getDay()]+', '+pad(d.getDate())+'/'+pad(d.getMonth()+1);
+  if(diff===0) return 'Hôm nay ('+base+')';
+  if(diff===1) return 'Ngày mai ('+base+')';
+  if(diff===-1) return 'Hôm qua ('+base+')';
+  return base+(d.getFullYear()!==new Date().getFullYear()?'/'+d.getFullYear():'');
+}
+function digits(s){return String(s||'').replace(/[^0-9]/g,'');}
+const ACC = {'à':'a','á':'a','ạ':'a','ả':'a','ã':'a','â':'a','ầ':'a','ấ':'a','ậ':'a','ẩ':'a','ẫ':'a','ă':'a','ằ':'a','ắ':'a','ặ':'a','ẳ':'a','ẵ':'a',
+  'è':'e','é':'e','ẹ':'e','ẻ':'e','ẽ':'e','ê':'e','ề':'e','ế':'e','ệ':'e','ể':'e','ễ':'e','ì':'i','í':'i','ị':'i','ỉ':'i','ĩ':'i',
+  'ò':'o','ó':'o','ọ':'o','ỏ':'o','õ':'o','ô':'o','ồ':'o','ố':'o','ộ':'o','ổ':'o','ỗ':'o','ơ':'o','ờ':'o','ớ':'o','ợ':'o','ở':'o','ỡ':'o',
+  'ù':'u','ú':'u','ụ':'u','ủ':'u','ũ':'u','ư':'u','ừ':'u','ứ':'u','ự':'u','ử':'u','ữ':'u','ỳ':'y','ý':'y','ỵ':'y','ỷ':'y','ỹ':'y','đ':'d'};
+function norm(s){
+  s = String(s||'').toLowerCase();
+  try{ s = s.normalize('NFC'); }catch(e){}
+  return s.replace(/[̀-ͯ]/g,'').replace(/./g,c=>ACC[c]||c).replace(/\s+/g,' ').trim();
+}
+function initials(name){
+  const p=String(name||'?').trim().split(/\s+/).filter(Boolean);
+  if(!p.length) return '?';
+  if(p.length===1) return p[0].slice(0,2).toUpperCase();
+  return (p[p.length-2][0]+p[p.length-1][0]).toUpperCase();
+}
+function avColor(name){let h=0;for(const ch of String(name||''))h=(h*31+ch.charCodeAt(0))>>>0;return AV_COLORS[h%AV_COLORS.length];}
+function tagHtml(label,color,extra){return '<span class="tag" style="background:'+color+'1F;color:'+color+'">'+(extra||'')+esc(label)+'</span>';}
+function stTag(k){const s=stMap[k]||stMap.moi;return tagHtml(s.l,s.c);}
+function htTag(k){const h=htMap[k]||htMap.am;return tagHtml(h.l,h.c,h.i+' ');}
+function avatar(c){
+  const h=htMap[c.heat]||htMap.am;
+  return '<div class="av" style="background:'+avColor(c.name)+'">'+esc(initials(c.name))+'<span class="ht">'+h.i+'</span></div>';
+}
+function toast(msg){const t=$('toast');t.textContent=msg;t.classList.add('show');clearTimeout(toast._t);toast._t=setTimeout(()=>t.classList.remove('show'),2300);}
+
+/* =====================================================================
+   LƯU DỮ LIỆU (trong app Android: file riêng của app; trên trình duyệt: localStorage)
+   ===================================================================== */
+const KEY='khachbds_v1';
+const hasBridge = ()=> typeof window.Android!=='undefined' && window.Android && typeof window.Android.saveData==='function';
+function loadRaw(){
+  try{
+    if(hasBridge()) return window.Android.loadData() || '';
+    return localStorage.getItem(KEY) || '';
+  }catch(e){ return ''; }
+}
+function persist(){
+  const s=JSON.stringify(DB);
+  try{
+    if(hasBridge()){ if(window.Android.saveData(s)===false) toast('Lỗi lưu dữ liệu!'); }
+    else localStorage.setItem(KEY,s);
+  }catch(e){ toast('Lỗi lưu dữ liệu!'); }
+  scheduleReminders();
+}
+
+let DB = null;
+function validDB(d){return d && Array.isArray(d.customers) && Array.isArray(d.properties) && Array.isArray(d.appts);}
+function fixDB(d){
+  d.customers.forEach(c=>{
+    if(!stMap[c.status]) c.status='moi';
+    if(!htMap[c.heat]) c.heat='am';
+    if(!Array.isArray(c.timeline)) c.timeline=[];
+    ['name','phone','zalo','email','need','budget','area','source','owner','note'].forEach(f=>{ if(c[f]==null) c[f]=''; });
+    if(!c.createdAt) c.createdAt=nowStr();
+  });
+  d.properties.forEach(p=>{['type','title','location','price','area','status','note'].forEach(f=>{if(p[f]==null)p[f]='';}); if(!p.status)p.status='Đang bán';});
+  d.appts.forEach(a=>{ if(!a.type)a.type='Gọi lại'; a.done=!!a.done; });
+  return d;
+}
+function initDB(){
+  const raw=loadRaw();
+  if(raw){
+    try{ const d=JSON.parse(raw); if(validDB(d)){ DB=fixDB(d); return; } }catch(e){}
+    // Dữ liệu hỏng: không ghi đè, giữ bản cũ để sao lưu
+    DB={customers:[],properties:[],appts:[],brokenRaw:raw};
+    toast('Không đọc được dữ liệu cũ');
+    return;
+  }
+  DB=sampleData();
+  persist();
+}
+
+/* ---------------- Dữ liệu mẫu ---------------- */
+function sampleData(){
+  const now=new Date();
+  const at=(days,h,m)=>{const d=addDays(now,days);d.setHours(h,m||0,0,0);return dtStr(d);};
+  const day=n=>dayStr(addDays(now,n));
+  const mk=(o,tl)=>{
+    const c=Object.assign({id:uid(),zalo:'',email:'',note:'',sample:true,nextContact:''},o);
+    c.timeline=tl.map(t=>Object.assign({id:uid()},t));
+    c.createdAt=c.timeline.length?c.timeline[0].t:nowStr();
+    return c;
+  };
+  const C=[
+    mk({name:'Nguyễn Văn Nam',phone:'0901234567',zalo:'0901234567',email:'nam.nguyen@gmail.com',need:'Căn hộ',budget:'3 - 3,5 tỷ',area:'Quận 7',source:'Facebook',owner:'Tôi',status:'thuongluong',heat:'nong',nextContact:day(0)},
+      [{t:at(-12,9,15),kind:'create',text:'Khách hỏi căn hộ 2PN qua Facebook'},
+       {t:at(-10,10,0),kind:'status',from:'moi',to:'tuvan',text:'Gửi 3 căn hộ phù hợp qua Zalo'},
+       {t:at(-6,15,30),kind:'status',from:'tuvan',to:'xemnha',text:'Dẫn đi xem căn 2PN view sông, khách rất thích'},
+       {t:at(-1,20,10),kind:'status',from:'xemnha',to:'thuongluong',heatTo:'nong',text:'Khách trả 3,2 tỷ, chủ nhà muốn 3,4 tỷ. Hẹn chốt giá hôm nay'}]),
+    mk({name:'Trần Thị Hoa',phone:'0912345678',zalo:'0912345678',need:'Đất nền',budget:'1,5 - 2 tỷ',area:'Bình Dương',source:'Zalo',owner:'Tôi',status:'tuvan',heat:'am',nextContact:day(-2)},
+      [{t:at(-8,8,40),kind:'create',text:'Khách nhắn Zalo hỏi đất nền sổ riêng'},
+       {t:at(-7,9,0),kind:'status',from:'moi',to:'tuvan',text:'Tư vấn 2 dự án đất nền Bến Cát'},
+       {t:at(-4,11,20),kind:'call',text:'Khách đang cân nhắc, hẹn cuối tuần trả lời'}]),
+    mk({name:'Lê Minh Tuấn',phone:'0987654321',email:'tuan.le@company.vn',need:'Nhà phố',budget:'8 - 10 tỷ',area:'Thủ Đức',source:'Người quen giới thiệu',owner:'Anh Hùng',status:'datcoc',heat:'vip',nextContact:day(3)},
+      [{t:at(-30,14,0),kind:'create',text:'Anh Long giới thiệu, cần nhà phố mặt tiền kinh doanh'},
+       {t:at(-20,9,30),kind:'status',from:'moi',to:'xemnha',text:'Xem 2 căn khu Thảo Điền'},
+       {t:at(-5,16,0),kind:'status',from:'xemnha',to:'datcoc',heatTo:'vip',text:'Đặt cọc 500 triệu căn mặt tiền Nguyễn Văn Hưởng'}]),
+    mk({name:'Phạm Thu Trang',phone:'0933111222',need:'Căn hộ',budget:'2 - 2,5 tỷ',area:'Quận 9',source:'Website',owner:'Chị Lan',status:'moi',heat:'am',nextContact:day(0)},
+      [{t:at(0,8,5),kind:'create',text:'Khách để lại số trên website, cần căn 1PN+'}]),
+    mk({name:'Hoàng Đức Anh',phone:'0977888999',zalo:'0977888999',need:'Biệt thự',budget:'25 - 30 tỷ',area:'Quận 2',source:'Quảng cáo',owner:'Tôi',status:'dachot',heat:'vip',nextContact:''},
+      [{t:at(-60,10,0),kind:'create',text:'Khách từ quảng cáo Google'},
+       {t:at(-40,15,0),kind:'status',from:'moi',to:'thuongluong',text:'Thương lượng biệt thự song lập'},
+       {t:at(-25,11,0),kind:'status',from:'thuongluong',to:'dachot',text:'Ký HĐMB, đã thanh toán đợt 1'}]),
+    mk({name:'Võ Thị Mai',phone:'0909555666',need:'Căn hộ',budget:'4 tỷ',area:'Quận 7',source:'Facebook',owner:'Chị Lan',status:'chamlai',heat:'lanh',nextContact:day(-5)},
+      [{t:at(-45,9,0),kind:'create',text:'Khách hỏi căn 3PN'},
+       {t:at(-15,10,0),kind:'status',from:'tuvan',to:'chamlai',heatTo:'lanh',text:'Khách tạm hoãn vì chờ bán nhà cũ, gọi lại sau 2 tuần'}]),
+    mk({name:'Đặng Quốc Bảo',phone:'0918777333',need:'Shophouse',budget:'12 tỷ',area:'Nhà Bè',source:'Đi xem dự án',owner:'Anh Hùng',status:'xemnha',heat:'nong',nextContact:day(1)},
+      [{t:at(-9,9,0),kind:'create',text:'Gặp tại nhà mẫu dự án'},
+       {t:at(-2,17,0),kind:'status',from:'tuvan',to:'xemnha',heatTo:'nong',text:'Xem shophouse góc, hỏi chính sách thanh toán'}]),
+    mk({name:'Bùi Thanh Hằng',phone:'0966222444',need:'Đất nền',budget:'900 triệu',area:'Long An',source:'Zalo',owner:'Tôi',status:'khongtn',heat:'lanh',nextContact:''},
+      [{t:at(-20,8,0),kind:'create',text:'Hỏi đất nền giá rẻ'},
+       {t:at(-18,9,0),kind:'status',from:'moi',to:'khongtn',text:'Ngân sách quá thấp so với khu vực khách muốn'}]),
+    mk({name:'Ngô Hải Yến',phone:'0944666888',zalo:'0944666888',need:'Nhà phố',budget:'5 - 6 tỷ',area:'Gò Vấp',source:'Người quen giới thiệu',owner:'Chị Lan',status:'tuvan',heat:'nong',nextContact:day(0)},
+      [{t:at(-3,10,0),kind:'create',text:'Chị Mai giới thiệu, cần nhà 1 trệt 2 lầu'},
+       {t:at(-1,9,30),kind:'msg',text:'Đã gửi 4 căn qua Zalo, khách thích căn hẻm xe hơi'}]),
+    mk({name:'Trịnh Văn Long',phone:'0922000111',need:'Căn hộ',budget:'6 tỷ',area:'Quận 2',source:'Facebook',owner:'Tôi',status:'moi',heat:'am',nextContact:day(2)},
+      [{t:at(-1,21,0),kind:'create',text:'Inbox fanpage hỏi căn hộ cao cấp đầu tư cho thuê'}])
+  ];
+  const P=[
+    {type:'Căn hộ',title:'Căn 2PN Sunrise City View',location:'Nguyễn Hữu Thọ, Quận 7',price:'3,4 tỷ',area:'76',status:'Đang bán',note:'Hướng Đông Nam, view sông, full nội thất'},
+    {type:'Căn hộ',title:'Căn 1PN+ Vinhomes Grand Park',location:'TP. Thủ Đức',price:'2,3 tỷ',area:'55',status:'Đang bán',note:'Tầng trung, nhận nhà ngay'},
+    {type:'Đất nền',title:'Đất nền KDC Bến Cát',location:'Bến Cát, Bình Dương',price:'1,8 tỷ',area:'100',status:'Đang bán',note:'Sổ riêng, thổ cư 100%'},
+    {type:'Nhà phố',title:'Nhà phố hẻm xe hơi Gò Vấp',location:'Phường 10, Gò Vấp',price:'5,6 tỷ',area:'60',status:'Đang bán',note:'1 trệt 2 lầu, 4PN'},
+    {type:'Nhà phố',title:'Nhà mặt tiền Nguyễn Văn Hưởng',location:'Thảo Điền, Thủ Đức',price:'9,5 tỷ',area:'120',status:'Đã cọc',note:'Khách Lê Minh Tuấn đã cọc'},
+    {type:'Shophouse',title:'Shophouse góc The Global City',location:'Đỗ Xuân Hợp, Thủ Đức',price:'12 tỷ',area:'95',status:'Đang bán',note:'Căn góc 2 mặt tiền'},
+    {type:'Biệt thự',title:'Biệt thự song lập Lakeview',location:'Quận 2',price:'28 tỷ',area:'250',status:'Đã bán',note:''}
+  ].map(p=>Object.assign({id:uid(),sample:true},p));
+  const A=[
+    {customerId:C[0].id,at:at(0,16,0),type:'Gặp mặt',note:'Chốt giá với chủ nhà tại văn phòng'},
+    {customerId:C[6].id,at:at(1,9,30),type:'Đi xem nhà',note:'Xem lại shophouse góc, mang bảng giá'},
+    {customerId:C[2].id,at:at(3,14,0),type:'Ký hợp đồng',note:'Ký HĐ đặt cọc chính thức'},
+    {customerId:C[1].id,at:at(-1,10,0),type:'Gọi lại',note:'Hỏi quyết định đất Bến Cát'}
+  ].map(a=>Object.assign({id:uid(),done:false,sample:true},a));
+  return {customers:C,properties:P,appts:A,createdAt:nowStr()};
+}
+
+/* =====================================================================
+   NHẮC HẸN (thông báo trên Android)
+   ===================================================================== */
+function scheduleReminders(){
+  clearTimeout(scheduleReminders._t);
+  scheduleReminders._t=setTimeout(()=>{
+    if(!(window.Android && typeof window.Android.setReminders==='function')) return;
+    const now=Date.now(), list=[];
+    DB.appts.forEach(a=>{
+      if(a.done) return;
+      const c=findC(a.customerId); const d=toDate(a.at); if(!d) return;
+      const t=d.getTime()-30*60000;   // báo trước 30 phút
+      if(t>now) list.push({at:t,title:(APPT_ICON[a.type]||'')+' '+a.type+' lúc '+pad(d.getHours())+':'+pad(d.getMinutes()),
+        text:(c?c.name+(c.phone?' - '+c.phone:''):'')+(a.note?'\n'+a.note:'')});
+    });
+    DB.customers.forEach(c=>{
+      if(!c.nextContact||CLOSED.includes(c.status)) return;
+      const d=toDate(c.nextContact); if(!d) return; d.setHours(8,0,0,0);
+      if(d.getTime()>now) list.push({at:d.getTime(),title:'Cần liên hệ lại: '+c.name,text:(c.phone||'')+' · '+(stMap[c.status]||stMap.moi).l});
+    });
+    list.sort((a,b)=>a.at-b.at);
+    try{ window.Android.setReminders(JSON.stringify(list.slice(0,60))); }catch(e){}
+  },400);
+}
+
+/* =====================================================================
+   TRUY VẤN
+   ===================================================================== */
+function findC(id){return DB.customers.find(c=>c.id===id)||null;}
+function findP(id){return DB.properties.find(p=>p.id===id)||null;}
+function lastEntry(c){
+  let best=null;
+  for(const t of c.timeline){ if(!best||String(t.t)>String(best.t)) best=t; }
+  return best;
+}
+function entryText(e){
+  if(!e) return '';
+  if(e.kind==='status'){
+    const a=(stMap[e.from]||{}).l, b=(stMap[e.to]||{}).l;
+    return (e.text?e.text:(a&&b?a+' → '+b:'Cập nhật trạng thái'));
+  }
+  if(e.kind==='appt') return '📅 '+(e.text||'Lịch hẹn');
+  const pre={call:'📞 ',msg:'💬 ',meet:'🤝 '}[e.kind]||'';
+  return pre+(e.text||'');
+}
+/** Tình trạng nhắc: 'overdue' | 'today' | '' */
+function careState(c){
+  if(CLOSED.includes(c.status)) return '';
+  const now=new Date(), today=startOfDay(now);
+  let st='';
+  if(c.nextContact){
+    const d=toDate(c.nextContact);
+    if(d){ if(d<today) return 'overdue'; if(dayDiff(d,now)===0) st='today'; }
+  }
+  for(const a of DB.appts){
+    if(a.done||a.customerId!==c.id) continue;
+    const d=toDate(a.at); if(!d) continue;
+    if(d<now && dayDiff(d,now)<0) return 'overdue';
+    if(dayDiff(d,now)===0) st='today';
+  }
+  return st;
+}
+
+/* =====================================================================
+   ĐIỀU HƯỚNG
+   ===================================================================== */
+let TAB='customers';
+const F = {status:'all', care:'', heat:[], need:[], area:[], owner:[], q:''};
+const PF = {type:'all', status:'all'};
+let SHOW_DONE=false;
+const stack=[];
+
+function switchTab(t){
+  TAB=t;
+  document.querySelectorAll('.tabbar button').forEach(b=>b.classList.toggle('on',b.dataset.tab===t));
+  $('content').scrollTop=0;
+  render();
+}
+function render(){
+  const titles={customers:'Khách hàng',props:'Bất động sản',appts:'Lịch hẹn',stats:'Thống kê'};
+  $('title').textContent=titles[TAB];
+  $('searchWrap').classList.toggle('hidden', TAB!=='customers' && TAB!=='props');
+  $('fbtn').classList.toggle('hidden', TAB!=='customers');
+  $('q').placeholder = TAB==='props' ? 'Tìm tên, vị trí BĐS...' : 'Tìm tên, SĐT, khu vực...';
+  $('q').value = TAB==='props' ? (PF.q||'') : (F.q||'');
+  $('qClear').classList.toggle('hidden', !$('q').value);
+  $('fab').classList.toggle('hidden', TAB==='stats');
+  $('topAction').innerHTML = TAB==='stats' ? '' : '<svg viewBox="0 0 24 24"><path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"/></svg>';
+  if(TAB==='customers') renderCustomers();
+  else if(TAB==='props') renderProps();
+  else if(TAB==='appts') renderAppts();
+  else renderStats();
+  updateBadges();
+}
+function updateBadges(){
+  let due=0; DB.customers.forEach(c=>{ if(careState(c)) due++; });
+  const b=$('badgeCus'); b.textContent=due; b.classList.toggle('hidden',!due);
+  const now=new Date(); let ap=0;
+  DB.appts.forEach(a=>{ if(!a.done){ const d=toDate(a.at); if(d && dayDiff(d,now)<=0) ap++; }});
+  const b2=$('badgeAppt'); b2.textContent=ap; b2.classList.toggle('hidden',!ap);
+  const n=F.heat.length+F.need.length+F.area.length+F.owner.length;
+  $('fbtn').classList.toggle('on',n>0);
+  $('fbtn').textContent = n ? '⚙ Lọc ('+n+')' : '⚙ Lọc';
+}
+function refreshAll(){
+  render();
+  stack.forEach(s=>{ if(s.render) s.render(); });
+}
+function topAction(){ fabClick(); }
+function fabClick(){
+  if(TAB==='customers') openCustomerForm(null);
+  else if(TAB==='props') openPropForm(null);
+  else if(TAB==='appts') openApptSheet(null,null);
+}
+function onSearch(v){
+  if(TAB==='props'){PF.q=v;} else {F.q=v;}
+  $('qClear').classList.toggle('hidden',!v);
+  if(TAB==='props') renderProps(); else renderCustomers();
+}
+function clearSearch(){ $('q').value=''; onSearch(''); }
+
+/* ---- Màn hình chồng ---- */
+function pushScreen(build, renderFn){
+  const el=document.createElement('div');
+  el.className='screen';
+  document.body.appendChild(el);
+  const item={el, kind:'screen', render:null};
+  if(renderFn){ item.render=()=>renderFn(el); item.render(); } else { el.innerHTML=build; }
+  stack.push(item);
+  requestAnimationFrame(()=>requestAnimationFrame(()=>el.classList.add('show')));
+  return el;
+}
+function popTop(){
+  const it=stack.pop(); if(!it) return false;
+  if(it.kind==='sheet'){ it.el.classList.remove('show'); if(it.onClose) it.onClose(); }
+  else it.el.classList.remove('show');
+  setTimeout(()=>it.el.remove(),220);
+  return true;
+}
+function closeScreen(){ popTop(); }
+/** Nút Back của điện thoại gọi hàm này. Trả về true nếu đã xử lý. */
+window.appBack=function(){
+  if(stack.length){ popTop(); return true; }
+  if(TAB!=='customers'){ switchTab('customers'); return true; }
+  if(F.status!=='all'||F.care||F.q||F.heat.length||F.need.length||F.area.length||F.owner.length){ resetFilters(); return true; }
+  return false;
+};
+
+/* ---- Bottom sheet ---- */
+function openSheet(title, bodyHtml, okLabel, onOk, opts){
+  opts=opts||{};
+  const m=document.createElement('div');
+  m.className='mask';
+  m.innerHTML='<div class="sheet"><div class="sh"><b>'+esc(title)+'</b><button class="ibtn" style="color:#78909C" data-x>✕</button></div>'+
+    '<div class="sb">'+bodyHtml+'</div>'+
+    '<div class="sf">'+(opts.extraBtn||'')+'<button class="no" data-x>Hủy</button><button class="ok" data-ok>'+esc(okLabel||'Lưu')+'</button></div></div>';
+  document.body.appendChild(m);
+  const item={el:m,kind:'sheet'};
+  stack.push(item);
+  m.addEventListener('click',e=>{
+    if(e.target===m || e.target.closest('[data-x]')){ removeItem(item); }
+    else if(e.target.closest('[data-ok]')){ if(onOk(m)!==false) removeItem(item); }
+  });
+  requestAnimationFrame(()=>requestAnimationFrame(()=>m.classList.add('show')));
+  return m;
+}
+function removeItem(item){
+  const i=stack.indexOf(item); if(i<0) return;
+  stack.splice(i,1); item.el.classList.remove('show'); setTimeout(()=>item.el.remove(),220);
+}
+
+/* ---- Hộp thoại xác nhận ---- */
+function confirmBox(title,msg,okLabel,danger){
+  return new Promise(res=>{
+    const m=document.createElement('div');
+    m.className='mask center';
+    m.innerHTML='<div class="dialog"><h4>'+esc(title)+'</h4><p>'+esc(msg)+'</p><div class="btns">'+
+      '<button style="background:#ECEFF1" data-v="0">Không</button>'+
+      '<button style="background:'+(danger?'#E53935':'var(--p)')+';color:#fff" data-v="1">'+esc(okLabel||'Đồng ý')+'</button></div></div>';
+    document.body.appendChild(m);
+    const item={el:m,kind:'sheet',onClose:()=>res(false)};
+    stack.push(item);
+    m.addEventListener('click',e=>{
+      const b=e.target.closest('[data-v]');
+      if(b||e.target===m){ item.onClose=null; removeItem(item); res(!!(b&&b.dataset.v==='1')); }
+    });
+    requestAnimationFrame(()=>m.classList.add('show'));
+  });
+}
+
+/* ---- Nhóm nút chọn (chip) ---- */
+function chipGroup(name, options, selected, multi){
+  // options: [{v,l}] ; selected: string hoặc mảng
+  return '<div class="chips" data-group="'+name+'" data-multi="'+(multi?1:0)+'">'+options.map(o=>{
+    const on = multi ? (selected||[]).includes(o.v) : selected===o.v;
+    return '<button type="button" class="chip'+(on?' on':'')+'" data-v="'+esc(o.v)+'">'+esc(o.l)+'</button>';
+  }).join('')+'</div>';
+}
+function bindChips(root){
+  root.querySelectorAll('.chips[data-group]').forEach(g=>{
+    g.addEventListener('click',e=>{
+      const b=e.target.closest('.chip'); if(!b) return;
+      if(g.dataset.multi==='1') b.classList.toggle('on');
+      else { const was=b.classList.contains('on'); g.querySelectorAll('.chip').forEach(x=>x.classList.remove('on')); if(!(was && g.dataset.allowempty==='1')) b.classList.add('on'); }
+      g.dispatchEvent(new Event('change'));
+    });
+  });
+}
+function chipVal(root,name){
+  const g=root.querySelector('.chips[data-group="'+name+'"]'); if(!g) return null;
+  const on=[...g.querySelectorAll('.chip.on')].map(b=>b.dataset.v);
+  return g.dataset.multi==='1' ? on : (on[0]||'');
+}
+
+/* =====================================================================
+   TAB KHÁCH HÀNG
+   ===================================================================== */
+function filteredCustomers(){
+  const q=norm(F.q), qd=digits(F.q);
+  return DB.customers.filter(c=>{
+    if(F.status!=='all' && c.status!==F.status) return false;
+    if(F.care){ const cs=careState(c); if(F.care==='overdue'? cs!=='overdue' : cs!=='today') return false; }
+    if(F.heat.length && !F.heat.includes(c.heat)) return false;
+    if(F.need.length && !F.need.includes(c.need)) return false;
+    if(F.area.length && !F.area.includes(c.area)) return false;
+    if(F.owner.length && !F.owner.includes(c.owner)) return false;
+    if(q){
+      const hay=norm([c.name,c.area,c.need,c.budget,c.email,c.owner,c.source].join(' '));
+      const okText=hay.includes(q);
+      const okPhone=qd.length>=3 && (digits(c.phone).includes(qd)||digits(c.zalo).includes(qd));
+      if(!okText && !okPhone) return false;
+    }
+    return true;
+  }).sort((a,b)=>{
+    // Quá hạn lên đầu, rồi hôm nay, rồi theo tin nhắn mới nhất
+    const w={overdue:0,today:1,'':2};
+    const wa=w[careState(a)], wb=w[careState(b)];
+    if(wa!==wb) return wa-wb;
+    const ta=(lastEntry(a)||{}).t||a.createdAt, tb=(lastEntry(b)||{}).t||b.createdAt;
+    return String(tb).localeCompare(String(ta));
+  });
+}
+function renderCustomers(){
+  let over=0,today=0;
+  DB.customers.forEach(c=>{const s=careState(c); if(s==='overdue')over++; else if(s==='today')today++;});
+  const counts={all:DB.customers.length}; STATUSES.forEach(s=>counts[s.k]=0);
+  DB.customers.forEach(c=>{counts[c.status]=(counts[c.status]||0)+1;});
+  const list=filteredCustomers();
+
+  let h='';
+  h+='<div class="care">'+
+     '<button class="carecard '+(over?'red':'zero')+(F.care==='overdue'?' on':'')+'" onclick="setCare(\'overdue\')"><b>'+over+'</b><div>Quá hạn<br>cần gọi gấp</div></button>'+
+     '<button class="carecard '+(today?'org':'zero')+(F.care==='today'?' on':'')+'" onclick="setCare(\'today\')"><b>'+today+'</b><div>Cần chăm sóc<br>hôm nay</div></button></div>';
+  h+='<div class="counts">';
+  h+='<button class="cnt'+(F.status==='all'?' on':'')+'" style="color:var(--p)" onclick="setStatus(\'all\')"><b>'+counts.all+'</b><span>Tất cả</span></button>';
+  STATUSES.forEach(s=>{
+    h+='<button class="cnt'+(F.status===s.k?' on':'')+'" style="color:'+s.c+'" onclick="setStatus(\''+s.k+'\')"><b>'+counts[s.k]+'</b><span>'+esc(s.l)+'</span></button>';
+  });
+  h+='</div>';
+  const active=filterSummary();
+  if(active) h+='<div class="filterinfo"><span>🔎 '+esc(active)+' · <b>'+list.length+'</b> khách</span><button onclick="resetFilters()">Bỏ lọc</button></div>';
+
+  if(!DB.customers.length){
+    h+='<div class="empty"><div class="big">👋</div>Chưa có khách nào.<br>Bấm nút <b>+</b> để thêm khách đầu tiên.</div>';
+  } else if(!list.length){
+    h+='<div class="empty"><div class="big">🔍</div>Không có khách phù hợp.</div>';
+  } else {
+    h+='<div class="list">'+list.map(rowHtml).join('')+'</div>';
+  }
+  $('content').innerHTML=h;
+}
+function rowHtml(c){
+  const le=lastEntry(c);
+  const cs=careState(c);
+  const sub=[c.need,c.budget].filter(Boolean).join(' · ')||'Chưa rõ nhu cầu';
+  let due='';
+  if(cs==='overdue') due='<span class="tag due">⏰ Quá hạn</span>';
+  else if(cs==='today') due='<span class="tag today">📌 Hôm nay</span>';
+  return '<button class="row" onclick="openCustomer(\''+c.id+'\')">'+avatar(c)+
+    '<div class="mid"><div class="l1"><span class="nm">'+esc(c.name)+'</span><span class="tm">'+esc(fmtShort(le?le.t:c.createdAt))+'</span></div>'+
+    '<div class="l2">'+esc(sub)+(c.area?' · 📍'+esc(c.area):'')+'</div>'+
+    '<div class="l3">'+esc(entryText(le)||'Chưa có ghi chú')+'</div>'+
+    '<div class="tags">'+stTag(c.status)+htTag(c.heat)+due+'</div></div></button>';
+}
+function filterSummary(){
+  const parts=[];
+  if(F.care) parts.push(F.care==='overdue'?'Quá hạn':'Hôm nay');
+  if(F.status!=='all') parts.push(stMap[F.status].l);
+  if(F.heat.length) parts.push(F.heat.map(k=>htMap[k].l).join('/'));
+  if(F.need.length) parts.push(F.need.join('/'));
+  if(F.area.length) parts.push(F.area.join('/'));
+  if(F.owner.length) parts.push('PT: '+F.owner.join('/'));
+  if(F.q) parts.push('"'+F.q+'"');
+  return parts.join(' · ');
+}
+function setStatus(k){F.status=(F.status===k&&k!=='all')?'all':k; renderCustomers(); updateBadges();}
+function setCare(k){F.care=F.care===k?'':k; renderCustomers(); updateBadges();}
+function resetFilters(){F.status='all';F.care='';F.heat=[];F.need=[];F.area=[];F.owner=[];F.q='';$('q').value='';$('qClear').classList.add('hidden');renderCustomers();updateBadges();}
+function uniq(field){return [...new Set(DB.customers.map(c=>(c[field]||'').trim()).filter(Boolean))].sort((a,b)=>a.localeCompare(b,'vi'));}
+function openFilterSheet(){
+  const areas=uniq('area'), owners=uniq('owner');
+  const body=
+    '<label class="fl">Độ nóng</label>'+chipGroup('heat',HEATS.map(h=>({v:h.k,l:h.i+' '+h.l})),F.heat,true)+
+    '<label class="fl">Nhu cầu</label>'+chipGroup('need',NEEDS.map(n=>({v:n,l:n})),F.need,true)+
+    (areas.length?'<label class="fl">Khu vực</label>'+chipGroup('area',areas.map(a=>({v:a,l:a})),F.area,true):'')+
+    (owners.length?'<label class="fl">Người phụ trách</label>'+chipGroup('owner',owners.map(a=>({v:a,l:a})),F.owner,true):'')+
+    '<div style="height:8px"></div>';
+  const m=openSheet('Lọc khách hàng',body,'Áp dụng',root=>{
+    F.heat=chipVal(root,'heat')||[]; F.need=chipVal(root,'need')||[];
+    F.area=chipVal(root,'area')||[]; F.owner=chipVal(root,'owner')||[];
+    renderCustomers(); updateBadges();
+  },{extraBtn:'<button class="no" data-clear style="flex:.8">Xóa lọc</button>'});
+  bindChips(m);
+  m.querySelector('[data-clear]').addEventListener('click',()=>{m.querySelectorAll('.chip.on').forEach(b=>b.classList.remove('on'));});
+}
+
+/* ---------------- Chi tiết khách ---------------- */
+function openCustomer(id){
+  if(!findC(id)) return;
+  pushScreen(null, el=>renderDetail(el,id));
+}
+function renderDetail(el,id){
+  const c=findC(id);
+  if(!c){ el.innerHTML='<div class="topbar"><button class="ibtn" onclick="closeScreen()">←</button><h1>Khách hàng</h1></div><div class="empty">Khách này đã bị xóa.</div>'; return; }
+  const keep=el.querySelector('.composer textarea'); const draft=keep?keep.value:'';
+  const keepKind=el.querySelector('.composer select'); const kind=keepKind?keepKind.value:'note';
+  const scrollTop=el.querySelector('.body')?el.querySelector('.body').scrollTop:0;
+  const s=stMap[c.status]||stMap.moi;
+  const now=new Date();
+  let next='';
+  if(c.nextContact){
+    const d=toDate(c.nextContact), diff=dayDiff(d,now);
+    const closed=CLOSED.includes(c.status);
+    let col='var(--p)', txt='📅 Liên hệ lại: '+fmtDay(c.nextContact);
+    if(!closed && diff<0){col='var(--red)'; txt+=' — quá hạn '+(-diff)+' ngày';}
+    else if(!closed && diff===0){col='#E65100';}
+    next='<div class="next" style="color:'+col+'">'+txt+'</div>';
+  }
+  const appts=DB.appts.filter(a=>a.customerId===id&&!a.done).sort((a,b)=>String(a.at).localeCompare(String(b.at)));
+  const tl=[...c.timeline].sort((a,b)=>String(b.t).localeCompare(String(a.t)));
+  const ph=digits(c.phone), zl=digits(c.zalo||c.phone);
+
+  el.innerHTML=
+    '<div class="topbar"><button class="ibtn" onclick="closeScreen()" aria-label="Quay lại"><svg viewBox="0 0 24 24"><path d="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20v-2z"/></svg></button>'+
+    '<div class="dhead">'+avatar(c)+'<div class="t"><b>'+esc(c.name)+'</b><small>'+esc(s.l)+(c.phone?' · '+esc(c.phone):'')+'</small></div></div>'+
+    (ph?'<button class="ibtn" onclick="callPhone(\''+id+'\')" aria-label="Gọi"><svg viewBox="0 0 24 24"><path d="M6.62 10.79c1.44 2.83 3.76 5.14 6.59 6.59l2.2-2.2c.27-.27.67-.36 1.02-.24 1.12.37 2.33.57 3.57.57.55 0 1 .45 1 1V20c0 .55-.45 1-1 1-9.39 0-17-7.61-17-17 0-.55.45-1 1-1h3.5c.55 0 1 .45 1 1 0 1.25.2 2.45.57 3.57.11.35.03.74-.25 1.02l-2.2 2.2z"/></svg></button>':'')+
+    '<button class="ibtn" onclick="openCustomerForm(\''+id+'\')" aria-label="Sửa"><svg viewBox="0 0 24 24"><path d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM20.71 7.04a.996.996 0 000-1.41l-2.34-2.34a.996.996 0 00-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z"/></svg></button></div>'+
+    '<div class="body">'+
+      '<div class="card"><div class="statusbox">'+stTag(c.status)+htTag(c.heat)+'</div>'+next+
+        '<button class="bigbtn" onclick="openStatusSheet(\''+id+'\')">🔄 Cập nhật trạng thái</button></div>'+
+      '<div class="actions">'+
+        '<button onclick="callPhone(\''+id+'\')" '+(ph?'':'disabled')+'><span class="ic">📞</span>Gọi điện</button>'+
+        '<button onclick="openZalo(\''+id+'\')" '+(zl?'':'disabled')+'><span class="ic">💬</span>Zalo</button>'+
+        '<button onclick="sendSms(\''+id+'\')" '+(ph?'':'disabled')+'><span class="ic">✉️</span>SMS</button>'+
+        '<button onclick="openApptSheet(null,\''+id+'\')"><span class="ic">📅</span>Đặt lịch</button>'+
+      '</div>'+
+      (appts.length?'<div class="card"><h3>📅 Lịch hẹn sắp tới</h3>'+appts.map(a=>apptRow(a,true)).join('').replace(/class="appt/g,'style="margin:0 0 8px" class="appt')+'</div>':'')+
+      '<div class="card"><h3>Thông tin<span class="sp"></span><button onclick="openCustomerForm(\''+id+'\')">Sửa</button></h3><div class="info">'+
+        infoRow('SĐT',c.phone?'<a href="javascript:void(0)" onclick="callPhone(\''+id+'\')">'+esc(c.phone)+'</a>':'')+
+        infoRow('Zalo',c.zalo?esc(c.zalo):'')+
+        infoRow('Email',c.email?'<a href="javascript:void(0)" onclick="sendEmail(\''+id+'\')">'+esc(c.email)+'</a>':'')+
+        infoRow('Nhu cầu',esc(c.need))+infoRow('Ngân sách',esc(c.budget))+infoRow('Khu vực',esc(c.area))+
+        infoRow('Nguồn khách',esc(c.source))+infoRow('Phụ trách',esc(c.owner))+infoRow('Ghi chú',esc(c.note))+
+        infoRow('Ngày thêm',esc(fmtFull(c.createdAt)))+
+      '</div></div>'+
+      '<div class="card"><h3>🕘 Lịch sử chăm sóc ('+tl.length+')</h3>'+
+        (tl.length?'<div class="tl">'+tl.map(e=>tlItem(c,e)).join('')+'</div>':'<div style="color:var(--mut)">Chưa có lịch sử.</div>')+
+      '</div>'+
+      '<div style="padding:0 12px"><button class="bigbtn danger" onclick="deleteCustomer(\''+id+'\')">🗑 Xóa khách hàng</button></div>'+
+    '</div>'+
+    '<div class="composer"><select aria-label="Loại">'+NOTE_KINDS.map(k=>'<option value="'+k.k+'"'+(k.k===kind?' selected':'')+'>'+k.l+'</option>').join('')+'</select>'+
+      '<textarea rows="1" placeholder="Ghi chú chăm sóc..." oninput="autoGrow(this)"></textarea>'+
+      '<button class="send" onclick="addNote(\''+id+'\',this)" aria-label="Lưu ghi chú">➤</button></div>';
+  const ta=el.querySelector('.composer textarea'); ta.value=draft; if(draft) autoGrow(ta);
+  el.querySelector('.body').scrollTop=scrollTop;
+}
+function infoRow(k,v){ return v ? '<div class="k">'+k+'</div><div class="v">'+v+'</div>' : ''; }
+function autoGrow(t){t.style.height='42px';t.style.height=Math.min(t.scrollHeight,120)+'px';}
+function tlItem(c,e){
+  let color='var(--acc)', what='📝 Ghi chú';
+  if(e.kind==='create'){color='#1E88E5'; what='✨ Thêm khách mới';}
+  else if(e.kind==='status'){
+    const to=stMap[e.to]; color=to?to.c:'var(--p)';
+    const from=stMap[e.from];
+    what=(from?from.l:'?')+' → '+(to?to.l:'?');
+    if(e.heatTo && htMap[e.heatTo] && e.heatTo!==e.heatFrom) what+='  ·  '+htMap[e.heatTo].i+' '+htMap[e.heatTo].l;
+  }
+  else if(e.kind==='call'){color='#43A047'; what='📞 Đã gọi điện';}
+  else if(e.kind==='msg'){color='#1E88E5'; what='💬 Đã nhắn tin';}
+  else if(e.kind==='meet'){color='#8E24AA'; what='🤝 Đã gặp';}
+  else if(e.kind==='appt'){color='#F57C00'; what='📅 Lịch hẹn';}
+  let extra='';
+  if(e.kind==='status' && e.next) extra='<div class="when" style="margin-top:3px">Hẹn liên hệ lại: '+esc(fmtDay(e.next))+'</div>';
+  return '<div class="ti"><span class="dot" style="background:'+color+'"></span>'+
+    '<button class="del" onclick="deleteEntry(\''+c.id+'\',\''+e.id+'\')" aria-label="Xóa">✕</button>'+
+    '<div class="when">'+esc(fmtFull(e.t))+'</div><div class="what">'+esc(what)+'</div>'+
+    (e.text?'<div class="txt">'+esc(e.text)+'</div>':'')+extra+'</div>';
+}
+function addNote(id,btn){
+  const c=findC(id); if(!c) return;
+  const box=btn.closest('.composer'); const ta=box.querySelector('textarea'); const kind=box.querySelector('select').value;
+  const text=ta.value.trim();
+  if(!text && kind==='note'){ toast('Hãy nhập nội dung ghi chú'); ta.focus(); return; }
+  c.timeline.push({id:uid(),t:nowStr(),kind,text});
+  c.updatedAt=nowStr();
+  ta.value=''; autoGrow(ta);
+  persist(); refreshAll(); toast('Đã lưu vào lịch sử');
+}
+async function deleteEntry(cid,eid){
+  const c=findC(cid); if(!c) return;
+  if(!await confirmBox('Xóa dòng lịch sử?','Dòng này sẽ bị xóa khỏi lịch sử chăm sóc.','Xóa',true)) return;
+  c.timeline=c.timeline.filter(e=>e.id!==eid);
+  persist(); refreshAll();
+}
+async function deleteCustomer(id){
+  const c=findC(id); if(!c) return;
+  if(!await confirmBox('Xóa khách hàng?','Xóa "'+c.name+'" cùng toàn bộ lịch sử và lịch hẹn. Không thể khôi phục.','Xóa',true)) return;
+  DB.customers=DB.customers.filter(x=>x.id!==id);
+  DB.appts=DB.appts.filter(a=>a.customerId!==id);
+  persist();
+  // đóng màn chi tiết của khách này
+  for(let i=stack.length-1;i>=0;i--){ if(stack[i].kind==='screen'){ removeItem(stack[i]); break; } }
+  refreshAll(); toast('Đã xóa khách');
+}
+
+/* ---- Gọi / Zalo / SMS / Email ---- */
+function openUrl(u){ window.location.href=u; }
+function logContact(c,kind,text){ c.timeline.push({id:uid(),t:nowStr(),kind,text}); c.updatedAt=nowStr(); persist(); refreshAll(); }
+function callPhone(id){
+  const c=findC(id); if(!c||!digits(c.phone)){toast('Khách chưa có số điện thoại');return;}
+  openUrl('tel:'+digits(c.phone));
+  setTimeout(()=>logContact(c,'call','Gọi điện cho khách'),600);
+}
+function sendSms(id){const c=findC(id); if(!c||!digits(c.phone))return; openUrl('sms:'+digits(c.phone));}
+function openZalo(id){
+  const c=findC(id); const z=c?digits(c.zalo||c.phone):''; if(!z){toast('Khách chưa có số Zalo');return;}
+  openUrl('https://zalo.me/'+z);
+}
+function sendEmail(id){const c=findC(id); if(!c||!c.email)return; openUrl('mailto:'+encodeURIComponent(c.email.trim()));}
+
+/* ---------------- Cập nhật trạng thái ---------------- */
+function openStatusSheet(id){
+  const c=findC(id); if(!c) return;
+  const body=
+    '<label class="fl">Trạng thái mới</label>'+chipGroup('st',STATUSES.map(s=>({v:s.k,l:s.l})),c.status,false)+
+    '<label class="fl">Độ nóng</label>'+chipGroup('ht',HEATS.map(h=>({v:h.k,l:h.i+' '+h.l})),c.heat,false)+
+    '<label class="fl">Ghi chú / lý do</label><textarea class="fi" id="stNote" placeholder="VD: Khách đã xem nhà, thích căn góc, hẹn trả lời cuối tuần"></textarea>'+
+    '<label class="fl">Ngày cần liên hệ lại</label><input class="fi" type="date" id="stNext" value="'+esc(c.nextContact||'')+'">'+
+    '<div class="quick"><button type="button" data-d="1">Ngày mai</button><button type="button" data-d="3">3 ngày</button><button type="button" data-d="7">1 tuần</button><button type="button" data-d="30">1 tháng</button><button type="button" data-d="">Không hẹn</button></div><div style="height:6px"></div>';
+  const m=openSheet('Cập nhật trạng thái',body,'Lưu',root=>{
+    const st=chipVal(root,'st')||c.status, ht=chipVal(root,'ht')||c.heat;
+    const note=root.querySelector('#stNote').value.trim();
+    const next=root.querySelector('#stNext').value||'';
+    if(st===c.status && ht===c.heat && !note && next===(c.nextContact||'')){ toast('Chưa có gì thay đổi'); return false; }
+    c.timeline.push({id:uid(),t:nowStr(),kind:'status',from:c.status,to:st,heatFrom:c.heat,heatTo:ht,text:note,next:next});
+    c.status=st; c.heat=ht; c.nextContact=next; c.updatedAt=nowStr();
+    persist(); refreshAll(); toast('Đã cập nhật trạng thái');
+  });
+  bindChips(m);
+  m.querySelectorAll('.quick button').forEach(b=>b.addEventListener('click',()=>{
+    m.querySelector('#stNext').value = b.dataset.d==='' ? '' : dayStr(addDays(new Date(),+b.dataset.d));
+  }));
+  // Chọn Đã chốt / Không tiềm năng thì gợi ý bỏ ngày hẹn
+  m.querySelector('[data-group="st"]').addEventListener('change',()=>{
+    const v=chipVal(m,'st'); if(CLOSED.includes(v)) m.querySelector('#stNext').value='';
+  });
+}
+
+/* ---------------- Thêm / sửa khách ---------------- */
+function openCustomerForm(id){
+  const c=id?findC(id):null;
+  const v=c||{name:'',phone:'',zalo:'',email:'',need:'',budget:'',area:'',source:'',owner:'',status:'moi',heat:'am',nextContact:'',note:''};
+  const areas=uniq('area'), owners=uniq('owner');
+  const html=
+    '<div class="topbar"><button class="ibtn" onclick="closeScreen()" aria-label="Đóng">✕</button><h1>'+(c?'Sửa thông tin khách':'Thêm khách mới')+'</h1>'+
+    '<button class="ibtn" onclick="saveCustomer(\''+(id||'')+'\')" style="width:auto;padding:0 12px;border-radius:22px;font-size:17px;font-weight:700">Lưu</button></div>'+
+    '<div class="body"><div class="form" id="cform">'+
+      '<label class="fl">Tên khách hàng <span class="req">*</span></label><input class="fi" id="f_name" value="'+esc(v.name)+'" placeholder="VD: Anh Nam" autocapitalize="words">'+
+      '<label class="fl">Số điện thoại</label><input class="fi" id="f_phone" type="tel" value="'+esc(v.phone)+'" placeholder="09xx xxx xxx">'+
+      '<label class="fl">Zalo <small style="font-weight:400;color:var(--mut)">(bỏ trống = dùng SĐT)</small></label><input class="fi" id="f_zalo" type="tel" value="'+esc(v.zalo)+'">'+
+      '<label class="fl">Email</label><input class="fi" id="f_email" type="email" value="'+esc(v.email)+'" autocapitalize="off">'+
+      '<label class="fl">Nhu cầu</label>'+chipGroup('need',NEEDS.map(n=>({v:n,l:n})),v.need,false)+
+      '<label class="fl">Ngân sách</label><input class="fi" id="f_budget" value="'+esc(v.budget)+'" placeholder="VD: 3 - 3,5 tỷ">'+
+      '<label class="fl">Khu vực</label><input class="fi" id="f_area" value="'+esc(v.area)+'" placeholder="VD: Quận 7" list="dl_area">'+
+      '<datalist id="dl_area">'+areas.map(a=>'<option value="'+esc(a)+'">').join('')+'</datalist>'+
+      '<label class="fl">Nguồn khách</label>'+chipGroup('source',SOURCES.map(n=>({v:n,l:n})),v.source,false)+
+      '<label class="fl">Người phụ trách</label><input class="fi" id="f_owner" value="'+esc(v.owner)+'" placeholder="VD: Tôi" list="dl_owner">'+
+      '<datalist id="dl_owner">'+owners.map(a=>'<option value="'+esc(a)+'">').join('')+'</datalist>'+
+      (c?'':'<label class="fl">Trạng thái</label>'+chipGroup('status',STATUSES.map(s=>({v:s.k,l:s.l})),v.status,false)+
+             '<label class="fl">Độ nóng</label>'+chipGroup('heat',HEATS.map(h=>({v:h.k,l:h.i+' '+h.l})),v.heat,false))+
+      '<label class="fl">Ngày cần liên hệ lại</label><input class="fi" id="f_next" type="date" value="'+esc(v.nextContact||'')+'">'+
+      '<label class="fl">Ghi chú</label><textarea class="fi" id="f_note" placeholder="Thông tin thêm về khách...">'+esc(v.note)+'</textarea>'+
+      (c?'<div style="font-size:13.5px;color:var(--mut);margin-top:12px">Muốn đổi trạng thái / độ nóng: dùng nút "Cập nhật trạng thái" trong trang chi tiết để lưu vào lịch sử.</div>':'')+
+      '<button class="bigbtn" onclick="saveCustomer(\''+(id||'')+'\')">💾 Lưu khách hàng</button>'+
+    '</div></div>';
+  const el=pushScreen(html);
+  el.querySelectorAll('.chips[data-group="need"],.chips[data-group="source"]').forEach(g=>g.dataset.allowempty='1');
+  bindChips(el);
+  if(!c) setTimeout(()=>{ const n=el.querySelector('#f_name'); if(n) n.focus(); },350);
+}
+async function saveCustomer(id){
+  const el=stack[stack.length-1].el;
+  const g=k=>{const x=el.querySelector('#f_'+k);return x?x.value.trim():'';};
+  const name=g('name');
+  if(!name){ toast('Vui lòng nhập tên khách'); el.querySelector('#f_name').focus(); return; }
+  const phone=g('phone');
+  const pd=digits(phone);
+  if(pd){
+    const dup=DB.customers.find(x=>x.id!==id && digits(x.phone)===pd);
+    if(dup && !await confirmBox('Trùng số điện thoại','Số '+phone+' đã có ở khách "'+dup.name+'".\nVẫn lưu thêm?','Vẫn lưu')) return;
+  }
+  const email=g('email');
+  if(email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)){ toast('Email chưa đúng định dạng'); return; }
+  const data={name,phone,zalo:g('zalo'),email,need:chipVal(el,'need')||'',budget:g('budget'),area:g('area'),
+    source:chipVal(el,'source')||'',owner:g('owner'),nextContact:g('next'),note:g('note')};
+  let cid=id;
+  if(id){
+    const c=findC(id); if(!c){closeScreen();return;}
+    Object.assign(c,data); c.updatedAt=nowStr();
+    toast('Đã lưu thay đổi');
+  } else {
+    const c=Object.assign({id:uid(),status:chipVal(el,'status')||'moi',heat:chipVal(el,'heat')||'am',createdAt:nowStr(),updatedAt:nowStr(),timeline:[]},data);
+    c.timeline.push({id:uid(),t:nowStr(),kind:'create',text:data.note||''});
+    DB.customers.push(c); cid=c.id;
+    toast('Đã thêm khách '+name);
+  }
+  persist();
+  closeScreen();
+  refreshAll();
+  if(!id) openCustomer(cid);
+}
+
+/* =====================================================================
+   LỊCH HẸN
+   ===================================================================== */
+function apptRow(a,compact){
+  const c=findC(a.customerId); const d=toDate(a.at); const now=new Date();
+  let cls='';
+  if(!a.done && d){ if(d<now) cls=' red'; else if(dayDiff(d,now)===0) cls=' org'; }
+  if(a.done) cls+=' done';
+  const time=d?pad(d.getHours())+':'+pad(d.getMinutes()):'';
+  const dd=d?pad(d.getDate())+'/'+pad(d.getMonth()+1):'';
+  return '<div class="appt'+cls+'">'+
+    '<div class="time">'+time+'<small>'+dd+'</small></div>'+
+    '<div class="mid" style="flex:1;min-width:0" onclick="'+(c&&!compact?'openCustomer(\''+c.id+'\')':'')+'">'+
+      '<b>'+(APPT_ICON[a.type]||'📌')+' '+esc(a.type)+(compact?'':' · '+esc(c?c.name:'(khách đã xóa)'))+'</b>'+
+      (a.note?'<div>'+esc(a.note)+'</div>':'')+(!compact&&c&&c.phone?'<div>'+esc(c.phone)+'</div>':'')+
+    '</div>'+
+    '<div class="ab">'+
+      (c&&digits(c.phone)&&!a.done?'<button onclick="callPhone(\''+c.id+'\')" aria-label="Gọi">📞</button>':'')+
+      (a.done?'<button onclick="toggleAppt(\''+a.id+'\')" aria-label="Chưa xong">↩️</button>':'<button onclick="toggleAppt(\''+a.id+'\')" aria-label="Xong">✅</button>')+
+      '<button onclick="openApptSheet(\''+a.id+'\',null)" aria-label="Sửa">✏️</button>'+
+    '</div></div>';
+}
+function renderAppts(){
+  const now=new Date(), today=startOfDay(now);
+  const items=[];   // {date, kind:'appt'|'contact', ...}
+  DB.appts.forEach(a=>{ if(SHOW_DONE||!a.done){ const d=toDate(a.at); if(d) items.push({d,a}); } });
+  const contacts=DB.customers.filter(c=>c.nextContact&&!CLOSED.includes(c.status));
+  let h='<div class="toggle"><input type="checkbox" id="showDone" '+(SHOW_DONE?'checked':'')+' onchange="SHOW_DONE=this.checked;renderAppts()"><label for="showDone">Hiện cả lịch đã xong</label></div>';
+
+  // Nhóm: Quá hạn / theo từng ngày
+  const groups={};
+  const overdueA=[], overdueC=[];
+  items.forEach(it=>{
+    if(!it.a.done && it.d<now && it.d<today){ overdueA.push(it); return; }
+    const k=dayStr(it.d); (groups[k]=groups[k]||{a:[],c:[]}).a.push(it);
+  });
+  contacts.forEach(c=>{
+    const d=toDate(c.nextContact); if(!d) return;
+    if(d<today){ overdueC.push(c); return; }
+    const k=dayStr(d); (groups[k]=groups[k]||{a:[],c:[]}).c.push(c);
+  });
+  // Lịch hôm nay nhưng đã qua giờ vẫn để trong "Hôm nay" (màu đỏ)
+  if(overdueA.length||overdueC.length){
+    h+='<div class="sec red">⚠️ Quá hạn ('+(overdueA.length+overdueC.length)+')</div>';
+    overdueA.sort((x,y)=>x.d-y.d).forEach(it=>h+=apptRow(it.a,false));
+    overdueC.forEach(c=>h+=contactRow(c,'red'));
+  }
+  const keys=Object.keys(groups).sort();
+  const pastKeys=keys.filter(k=>toDate(k)<today), futureKeys=keys.filter(k=>toDate(k)>=today);
+  futureKeys.forEach(k=>{
+    const g=groups[k]; const isToday=dayDiff(toDate(k),now)===0;
+    h+='<div class="sec'+(isToday?' org':'')+'">'+esc(fmtDay(k))+' ('+(g.a.length+g.c.length)+')</div>';
+    g.a.sort((x,y)=>x.d-y.d).forEach(it=>h+=apptRow(it.a,false));
+    g.c.forEach(c=>h+=contactRow(c,isToday?'org':''));
+  });
+  if(SHOW_DONE && pastKeys.length){
+    h+='<div class="sec">Đã qua</div>';
+    pastKeys.reverse().forEach(k=>groups[k].a.sort((x,y)=>y.d-x.d).forEach(it=>h+=apptRow(it.a,false)));
+  }
+  if(!overdueA.length&&!overdueC.length&&!futureKeys.length&&!(SHOW_DONE&&pastKeys.length)){
+    h+='<div class="empty"><div class="big">📅</div>Chưa có lịch hẹn.<br>Bấm <b>+</b> để đặt lịch gọi lại, xem nhà...</div>';
+  }
+  $('content').innerHTML=h;
+}
+function contactRow(c,cls){
+  return '<div class="appt '+(cls||'')+'">'+
+    '<div class="time" style="font-size:22px">🔔</div>'+
+    '<div class="mid" style="flex:1;min-width:0" onclick="openCustomer(\''+c.id+'\')"><b>Liên hệ lại · '+esc(c.name)+'</b>'+
+    '<div>'+esc((stMap[c.status]||stMap.moi).l)+(c.phone?' · '+esc(c.phone):'')+'</div></div>'+
+    '<div class="ab">'+(digits(c.phone)?'<button onclick="callPhone(\''+c.id+'\')" aria-label="Gọi">📞</button>':'')+
+    '<button onclick="openStatusSheet(\''+c.id+'\')" aria-label="Cập nhật">🔄</button></div></div>';
+}
+function toggleAppt(aid){
+  const a=DB.appts.find(x=>x.id===aid); if(!a) return;
+  a.done=!a.done;
+  const c=findC(a.customerId);
+  if(c && a.done) c.timeline.push({id:uid(),t:nowStr(),kind:'appt',text:'Hoàn thành: '+a.type+(a.note?' – '+a.note:'')});
+  persist(); refreshAll(); toast(a.done?'Đã đánh dấu xong':'Đã mở lại lịch hẹn');
+}
+function openApptSheet(aid, customerId){
+  const a=aid?DB.appts.find(x=>x.id===aid):null;
+  if(!a && !customerId && !DB.customers.length){ toast('Hãy thêm khách trước'); return; }
+  const cid=a?a.customerId:customerId;
+  const def=new Date(); def.setHours(def.getHours()+1,0,0,0);
+  const v=a||{type:'Gọi lại',at:dtStr(def),note:''};
+  const opts=[...DB.customers].sort((x,y)=>x.name.localeCompare(y.name,'vi'));
+  const body=
+    (cid&&findC(cid)?'<div style="font-weight:700;font-size:17px;margin:6px 2px 0">👤 '+esc(findC(cid).name)+'</div><input type="hidden" id="apC" value="'+cid+'">':
+      '<label class="fl">Khách hàng</label><select class="fi" id="apC">'+opts.map(c=>'<option value="'+c.id+'">'+esc(c.name)+(c.phone?' – '+esc(c.phone):'')+'</option>').join('')+'</select>')+
+    '<label class="fl">Loại hẹn</label>'+chipGroup('type',APPT_TYPES.map(t=>({v:t,l:(APPT_ICON[t]||'')+' '+t})),v.type,false)+
+    '<label class="fl">Ngày giờ</label><input class="fi" type="datetime-local" id="apAt" value="'+esc(v.at)+'">'+
+    '<div class="quick"><button type="button" data-q="2h">Sau 2 tiếng</button><button type="button" data-q="t9">9h sáng mai</button><button type="button" data-q="t14">14h chiều mai</button></div>'+
+    '<label class="fl">Ghi chú</label><textarea class="fi" id="apNote" placeholder="VD: Mang theo bảng giá, hẹn ở nhà mẫu">'+esc(v.note)+'</textarea>'+
+    '<div style="font-size:13.5px;color:var(--mut);margin:10px 2px 4px">🔔 Điện thoại sẽ báo trước giờ hẹn 30 phút.</div>';
+  const m=openSheet(a?'Sửa lịch hẹn':'Đặt lịch hẹn',body,'Lưu',root=>{
+    const cId=root.querySelector('#apC').value;
+    const at=root.querySelector('#apAt').value;
+    if(!cId||!findC(cId)){ toast('Hãy chọn khách hàng'); return false; }
+    if(!at||!toDate(at)){ toast('Hãy chọn ngày giờ'); return false; }
+    const type=chipVal(root,'type')||'Gọi lại', note=root.querySelector('#apNote').value.trim();
+    const c=findC(cId);
+    if(a){ Object.assign(a,{customerId:cId,at,type,note}); toast('Đã lưu lịch hẹn'); }
+    else {
+      DB.appts.push({id:uid(),customerId:cId,at,type,note,done:false});
+      c.timeline.push({id:uid(),t:nowStr(),kind:'appt',text:'Đặt lịch '+type+' lúc '+fmtFull(at)+(note?' – '+note:'')});
+      toast('Đã đặt lịch hẹn');
+    }
+    persist(); refreshAll();
+  }, a?{extraBtn:'<button class="no" data-del style="flex:.7;color:#E53935">Xóa</button>'}:null);
+  bindChips(m);
+  m.querySelectorAll('.quick button').forEach(b=>b.addEventListener('click',()=>{
+    const d=new Date();
+    if(b.dataset.q==='2h'){ d.setHours(d.getHours()+2); d.setSeconds(0,0); }
+    else { d.setDate(d.getDate()+1); d.setHours(b.dataset.q==='t9'?9:14,0,0,0); }
+    m.querySelector('#apAt').value=dtStr(d);
+  }));
+  const del=m.querySelector('[data-del]');
+  if(del) del.addEventListener('click',async e=>{
+    e.stopPropagation();
+    if(!await confirmBox('Xóa lịch hẹn?','Lịch hẹn này sẽ bị xóa.','Xóa',true)) return;
+    DB.appts=DB.appts.filter(x=>x.id!==a.id);
+    const it=stack.find(s=>s.el===m); if(it) removeItem(it);
+    persist(); refreshAll(); toast('Đã xóa lịch hẹn');
+  });
+}
+
+/* =====================================================================
+   BẤT ĐỘNG SẢN
+   ===================================================================== */
+function renderProps(){
+  const q=norm(PF.q);
+  const list=DB.properties.filter(p=>{
+    if(PF.type!=='all'&&p.type!==PF.type) return false;
+    if(PF.status!=='all'&&p.status!==PF.status) return false;
+    if(q && !norm([p.title,p.location,p.type,p.note,p.price].join(' ')).includes(q)) return false;
+    return true;
+  });
+  let h='<div class="typechips">'+
+    '<button class="chip'+(PF.type==='all'?' on':'')+'" onclick="PF.type=\'all\';renderProps()">Tất cả ('+DB.properties.length+')</button>'+
+    PTYPES.map(t=>{const n=DB.properties.filter(p=>p.type===t).length;return '<button class="chip'+(PF.type===t?' on':'')+'" onclick="PF.type=\''+t+'\';renderProps()">'+PTYPE_ICON[t]+' '+t+' ('+n+')</button>';}).join('')+
+    '</div><div class="typechips" style="padding-top:8px">'+
+    ['all'].concat(PSTATUS.map(s=>s.k)).map(s=>'<button class="chip'+(PF.status===s?' on':'')+'" style="padding:6px 12px;font-size:14px" onclick="PF.status=\''+s+'\';renderProps()">'+(s==='all'?'Mọi tình trạng':s)+'</button>').join('')+
+    '</div>';
+  if(!DB.properties.length) h+='<div class="empty"><div class="big">🏘️</div>Chưa có bất động sản.<br>Bấm <b>+</b> để thêm căn hộ, đất nền, nhà phố...</div>';
+  else if(!list.length) h+='<div class="empty"><div class="big">🔍</div>Không có BĐS phù hợp.</div>';
+  else h+=list.map(p=>{
+    const st=PSTATUS.find(s=>s.k===p.status)||PSTATUS[0];
+    return '<button class="pcard" onclick="openPropForm(\''+p.id+'\')"><div class="pic">'+(PTYPE_ICON[p.type]||'🏠')+'</div>'+
+      '<div style="flex:1;min-width:0"><div class="t">'+esc(p.title)+'</div>'+
+      (p.location?'<div class="loc">📍 '+esc(p.location)+'</div>':'')+
+      '<div class="pr"><span class="price">'+esc(p.price||'Liên hệ')+'</span>'+(p.area?'<span class="area">'+esc(p.area)+' m²</span>':'')+'</div>'+
+      '<div class="tags">'+tagHtml(p.type||'BĐS','#00695C')+tagHtml(p.status,st.c)+'</div>'+
+      (p.note?'<div class="loc" style="margin-top:6px">'+esc(p.note)+'</div>':'')+'</div></button>';
+  }).join('');
+  $('content').innerHTML=h;
+}
+function openPropForm(id){
+  const p=id?findP(id):null;
+  const v=p||{type:'Căn hộ',title:'',location:'',price:'',area:'',status:'Đang bán',note:''};
+  const html=
+    '<div class="topbar"><button class="ibtn" onclick="closeScreen()" aria-label="Đóng">✕</button><h1>'+(p?'Sửa bất động sản':'Thêm bất động sản')+'</h1>'+
+    '<button class="ibtn" onclick="saveProp(\''+(id||'')+'\')" style="width:auto;padding:0 12px;border-radius:22px;font-size:17px;font-weight:700">Lưu</button></div>'+
+    '<div class="body"><div class="form">'+
+      '<label class="fl">Loại</label>'+chipGroup('ptype',PTYPES.map(t=>({v:t,l:PTYPE_ICON[t]+' '+t})),v.type,false)+
+      '<label class="fl">Tên / mô tả ngắn <span class="req">*</span></label><input class="fi" id="p_title" value="'+esc(v.title)+'" placeholder="VD: Căn 2PN view sông">'+
+      '<label class="fl">Vị trí</label><input class="fi" id="p_location" value="'+esc(v.location)+'" placeholder="VD: Quận 7, TP.HCM">'+
+      '<label class="fl">Giá</label><input class="fi" id="p_price" value="'+esc(v.price)+'" placeholder="VD: 3,4 tỷ">'+
+      '<label class="fl">Diện tích (m²)</label><input class="fi" id="p_area" inputmode="decimal" value="'+esc(v.area)+'" placeholder="VD: 76">'+
+      '<label class="fl">Tình trạng</label>'+chipGroup('pstatus',PSTATUS.map(s=>({v:s.k,l:s.k})),v.status,false)+
+      '<label class="fl">Ghi chú</label><textarea class="fi" id="p_note" placeholder="Hướng, pháp lý, nội thất...">'+esc(v.note)+'</textarea>'+
+      '<button class="bigbtn" onclick="saveProp(\''+(id||'')+'\')">💾 Lưu</button>'+
+      (p?'<button class="bigbtn danger" onclick="deleteProp(\''+id+'\')">🗑 Xóa bất động sản</button>':'')+
+    '</div></div>';
+  const el=pushScreen(html); bindChips(el);
+}
+function saveProp(id){
+  const el=stack[stack.length-1].el;
+  const g=k=>el.querySelector('#p_'+k).value.trim();
+  const title=g('title');
+  if(!title){ toast('Vui lòng nhập tên bất động sản'); el.querySelector('#p_title').focus(); return; }
+  const data={type:chipVal(el,'ptype')||'Căn hộ',title,location:g('location'),price:g('price'),area:g('area').replace(/\s*m2|\s*m²/gi,''),status:chipVal(el,'pstatus')||'Đang bán',note:g('note')};
+  if(id){ const p=findP(id); if(p) Object.assign(p,data); toast('Đã lưu'); }
+  else { DB.properties.unshift(Object.assign({id:uid()},data)); toast('Đã thêm bất động sản'); }
+  persist(); closeScreen(); refreshAll();
+}
+async function deleteProp(id){
+  if(!await confirmBox('Xóa bất động sản?','Không thể khôi phục.','Xóa',true)) return;
+  DB.properties=DB.properties.filter(p=>p.id!==id);
+  persist(); closeScreen(); refreshAll(); toast('Đã xóa');
+}
+
+/* =====================================================================
+   THỐNG KÊ + CÀI ĐẶT DỮ LIỆU
+   ===================================================================== */
+function renderStats(){
+  const cs=DB.customers, total=cs.length;
+  const closed=cs.filter(c=>c.status==='dachot').length;
+  const rate=total?Math.round(closed*1000/total)/10:0;
+  const now=new Date();
+  const month=cs.filter(c=>{const d=toDate(c.createdAt);return d&&d.getMonth()===now.getMonth()&&d.getFullYear()===now.getFullYear();}).length;
+  const apToday=DB.appts.filter(a=>{if(a.done)return false;const d=toDate(a.at);return d&&dayDiff(d,now)===0;}).length;
+  let over=0; cs.forEach(c=>{if(careState(c)==='overdue')over++;});
+  const deposit=cs.filter(c=>c.status==='datcoc').length;
+  const deg=Math.round(rate*3.6);
+  let h='<div class="kpis">'+
+    '<div class="kpi main"><div class="ring" style="background:conic-gradient(#FFC107 '+deg+'deg, rgba(255,255,255,.25) 0)"><i>'+rate+'%</i></div>'+
+      '<div><span>Tỷ lệ chốt</span><b>'+closed+' / '+total+'</b><span>khách đã chốt / tổng khách</span></div></div>'+
+    kpi(total,'Tổng khách')+kpi(closed,'Đã chốt')+kpi(deposit,'Đã đặt cọc')+kpi(month,'Khách mới tháng này')+
+    kpi(apToday,'Lịch hẹn hôm nay')+kpi(over,'Quá hạn chăm sóc',over?'var(--red)':'')+'</div>';
+  h+='<div class="card"><h3>📊 Theo trạng thái</h3>'+STATUSES.map(s=>bar(s.l,cs.filter(c=>c.status===s.k).length,total,s.c)).join('')+'</div>';
+  h+='<div class="card"><h3>🔥 Theo độ nóng</h3>'+HEATS.map(x=>bar(x.i+' '+x.l,cs.filter(c=>c.heat===x.k).length,total,x.c)).join('')+'</div>';
+  const src={}; cs.forEach(c=>{const k=c.source||'Chưa rõ';src[k]=(src[k]||0)+1;});
+  h+='<div class="card"><h3>📣 Theo nguồn khách</h3>'+(Object.keys(src).length?Object.entries(src).sort((a,b)=>b[1]-a[1]).map(([k,n])=>bar(k,n,total,'#26A69A')).join(''):'<div style="color:var(--mut)">Chưa có dữ liệu</div>')+'</div>';
+  const own={}; cs.forEach(c=>{const k=c.owner||'Chưa phân công';own[k]=own[k]||{n:0,w:0};own[k].n++;if(c.status==='dachot')own[k].w++;});
+  h+='<div class="card"><h3>👥 Theo người phụ trách</h3>'+(Object.keys(own).length?Object.entries(own).sort((a,b)=>b[1].n-a[1].n).map(([k,o])=>bar(k+' · chốt '+o.w,o.n,total,'#00897B')).join(''):'<div style="color:var(--mut)">Chưa có dữ liệu</div>')+'</div>';
+  const nSample=DB.customers.filter(c=>c.sample).length+DB.properties.filter(p=>p.sample).length+DB.appts.filter(a=>a.sample).length;
+  h+='<div class="card"><h3>⚙️ Dữ liệu</h3>'+
+    '<button class="setbtn" onclick="backupData()"><span class="ic">💾</span><span>Sao lưu dữ liệu<small>Gửi bản sao lưu qua Zalo / Email để cất giữ</small></span></button>'+
+    '<button class="setbtn" onclick="restoreData()"><span class="ic">♻️</span><span>Khôi phục dữ liệu<small>Dán nội dung bản sao lưu đã gửi trước đó</small></span></button>'+
+    (nSample?'<button class="setbtn" onclick="clearSamples()"><span class="ic">🧹</span><span>Xóa dữ liệu mẫu ('+nSample+')<small>Giữ lại khách thật bạn đã nhập</small></span></button>':'')+
+    '<button class="setbtn" onclick="clearAll()" style="color:var(--red)"><span class="ic">🗑</span><span>Xóa toàn bộ dữ liệu<small>Không thể khôi phục nếu chưa sao lưu</small></span></button>'+
+    '</div><div style="text-align:center;color:var(--mut);font-size:13px;padding:8px 0 20px">Khách BĐS · phiên bản 1.0 · dữ liệu lưu trong điện thoại</div>';
+  $('content').innerHTML=h;
+}
+function kpi(n,l,col){return '<div class="kpi"><b'+(col?' style="color:'+col+'"':'')+'>'+n+'</b><span>'+esc(l)+'</span></div>';}
+function bar(label,n,total,color){
+  const pct=total?Math.round(n*100/total):0;
+  return '<div class="bar"><div class="bl"><span>'+esc(label)+'</span><b>'+n+' <small style="color:var(--mut);font-weight:400">('+pct+'%)</small></b></div><div class="bt"><div class="bf" style="width:'+pct+'%;background:'+color+'"></div></div></div>';
+}
+function backupData(){
+  const text='KHACHBDS_BACKUP:'+JSON.stringify(Object.assign({},DB,{brokenRaw:undefined,backupAt:nowStr()}));
+  if(window.Android && typeof window.Android.shareText==='function'){ window.Android.shareText('Sao lưu Khách BĐS',text); }
+  else if(navigator.clipboard){ navigator.clipboard.writeText(text).then(()=>toast('Đã sao chép bản sao lưu'),()=>toast('Không sao chép được')); }
+  else toast('Thiết bị không hỗ trợ');
+}
+function restoreData(){
+  const body='<div style="font-size:15px;color:#37474F;margin:4px 2px 10px">Dán toàn bộ nội dung bản sao lưu (bắt đầu bằng <b>KHACHBDS_BACKUP:</b>) vào ô dưới. Dữ liệu hiện tại sẽ được <b>thay thế</b>.</div>'+
+    '<textarea class="fi" id="rsText" style="min-height:160px;font-size:13px" placeholder="KHACHBDS_BACKUP:{...}"></textarea>';
+  const m=openSheet('Khôi phục dữ liệu',body,'Khôi phục',root=>{
+    let t=root.querySelector('#rsText').value.trim();
+    const i=t.indexOf('KHACHBDS_BACKUP:'); if(i>=0) t=t.slice(i+16);
+    let d; try{ d=JSON.parse(t); }catch(e){ toast('Nội dung không đúng bản sao lưu'); return false; }
+    if(!validDB(d)){ toast('Nội dung không đúng bản sao lưu'); return false; }
+    DB=fixDB({customers:d.customers,properties:d.properties,appts:d.appts,createdAt:d.createdAt||nowStr()});
+    persist(); refreshAll(); toast('Đã khôi phục '+DB.customers.length+' khách');
+  });
+}
+async function clearSamples(){
+  if(!await confirmBox('Xóa dữ liệu mẫu?','Xóa các khách, BĐS và lịch hẹn mẫu. Khách bạn tự thêm vẫn giữ nguyên.','Xóa mẫu',true)) return;
+  const sampleIds=new Set(DB.customers.filter(c=>c.sample).map(c=>c.id));
+  DB.customers=DB.customers.filter(c=>!c.sample);
+  DB.properties=DB.properties.filter(p=>!p.sample);
+  DB.appts=DB.appts.filter(a=>!a.sample && !sampleIds.has(a.customerId));
+  persist(); resetFilters(); refreshAll(); toast('Đã xóa dữ liệu mẫu');
+}
+async function clearAll(){
+  if(!await confirmBox('Xóa TOÀN BỘ dữ liệu?','Tất cả khách hàng, BĐS, lịch hẹn sẽ bị xóa vĩnh viễn.','Tiếp tục',true)) return;
+  if(!await confirmBox('Chắc chắn chưa?','Hãy chắc chắn bạn đã sao lưu. Xóa ngay?','Xóa hết',true)) return;
+  DB={customers:[],properties:[],appts:[],createdAt:nowStr()};
+  persist(); resetFilters(); refreshAll(); toast('Đã xóa toàn bộ dữ liệu');
+}
+
+/* =====================================================================
+   KHỞI ĐỘNG
+   ===================================================================== */
+window.addEventListener('error',e=>{ try{ console.error('JSERR',e.message,e.lineno); }catch(_){} });
+initDB();
+switchTab('customers');
+scheduleReminders();
+// Tự làm mới mỗi phút để cập nhật trạng thái "quá hạn / hôm nay"
+setInterval(()=>{ const ae=document.activeElement; const typing=ae&&/INPUT|TEXTAREA|SELECT/.test(ae.tagName); if(!document.hidden && !typing && !document.querySelector('.mask')) { render(); stack.forEach(s=>{ if(s.render) s.render(); }); } },60000);
+document.addEventListener('visibilitychange',()=>{ if(!document.hidden) refreshAll(); });
+</script>
+</body>
+</html>

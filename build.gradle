@@ -1,0 +1,5 @@
+// Bo phien ban: Android Gradle Plugin 8.3.2 + Gradle 8.7 + Java 17.
+// App KHONG dung thu vien ngoai nao -> khong bi loi xung dot phien ban.
+plugins {
+    id 'com.android.application' version '8.3.2' apply false
+}
